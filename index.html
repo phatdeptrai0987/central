@@ -218,6 +218,14 @@ header::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;ba
   <div id="page-counter" class="page">
     <div class="twocol">
       <div>
+        <div class="panel" style="border-color:#3b82f633;box-shadow:0 0 30px #3b82f611">
+          <h3 style="color:#60a5fa">🔵 Your Hero <span style="font-size:.7rem;color:#444;font-weight:400">(the hero you're playing)</span></h3>
+          <div id="myhero-slot"></div>
+          <div id="myhero-picker">
+            <input class="search-box" id="mhs" placeholder="🔍 Search your hero..." oninput="renderMHG()" style="width:100%;margin-bottom:10px"/>
+            <div class="minigrid" id="mhg"></div>
+          </div>
+        </div>
         <div class="panel">
           <h3 style="color:#ff6666">🔴 Enemy Team <span style="font-size:.7rem;color:#333;font-weight:400">(pick up to 5)</span></h3>
           <div id="eslots"></div>
@@ -746,7 +754,17 @@ const seen=new Set();
 const heroList=heroes.filter(h=>{ if(seen.has(h.name))return false; seen.add(h.name); return true; });
 
 // ── STATE ─────────────────────────────────────────────────────────
-let roleFilter='All',enemyTeam=[];
+let roleFilter='All',enemyTeam=[],myHero=null;
+
+// Items that are practical for each player role archetype
+const MY_ROLE_FIT={
+  Tank:    ['Dominance Ice','Antique Cuirass',"Athena's Shield",'Radiant Armor','Cursed Helmet','Immortality','Blade Armor'],
+  Fighter: ['Dominance Ice','Antique Cuirass','Wind of Nature','Immortality','Rose Gold Meteor','Malefic Roar','Blade Armor'],
+  Assassin:["Athena's Shield",'Immortality','Rose Gold Meteor','Wind of Nature','Malefic Roar','Divine Glaive'],
+  Mage:   ["Athena's Shield",'Radiant Armor','Immortality','Necklace of Durance','Divine Glaive'],
+  Marksman:['Blade Armor','Dominance Ice','Wind of Nature','Immortality','Malefic Roar','Necklace of Durance','Sea Halberd'],
+  Support: ["Athena's Shield",'Radiant Armor','Immortality','Necklace of Durance','Dominance Ice'],
+};
 const ROLES=['All','Tank','Fighter','Assassin','Mage','Marksman','Support'];
 
 // ── TAB ───────────────────────────────────────────────────────────
@@ -838,6 +856,55 @@ function closeM(){document.getElementById('mo').classList.add('hidden');document
 function closeOut(e){if(e.target===document.getElementById('mo'))closeM();}
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeM();});
 
+// ── YOUR HERO ─────────────────────────────────────────────────────
+function setMyHero(name){
+  myHero=heroList.find(h=>h.name===name)||null;
+  renderMyHeroSlot();
+  renderMHG();
+  renderCR();
+}
+function clearMyHero(){myHero=null;renderMyHeroSlot();renderMHG();renderCR();}
+
+function renderMyHeroSlot(){
+  const slot=document.getElementById('myhero-slot');
+  const picker=document.getElementById('myhero-picker');
+  if(myHero){
+    const s=rs(myHero);
+    slot.innerHTML=`<div class="eslot filled" style="border-color:#3b82f666;background:#08101888;box-shadow:0 0 20px #3b82f611">
+      <div class="sthumb" style="background:${s.grad}">
+        <span class="sthumb-e">${myHero.icon}</span>
+        ${hSrc(myHero.wn)?`<img class="sthumb-img" src="${hSrc(myHero.wn)}" alt="${myHero.name}" loading="lazy" onerror="hErr(this,'${myHero.wn.replace(/'/g,"\\'")}')">`:''}
+      </div>
+      <span class="sname" style="color:#93c5fd">${myHero.name}</span>
+      <span style="font-size:.6rem;color:${s.pip}">${myHero.roles.join(' · ')}</span>
+      <button class="rbtn" style="color:#60a5fa" onclick="clearMyHero()">✕</button>
+    </div>`;
+    picker.style.display='none';
+  } else {
+    slot.innerHTML=`<div class="eslot" style="cursor:pointer;border-color:#3b82f633" onclick="document.getElementById('myhero-picker').style.display='block';document.getElementById('mhs').focus();renderMHG()">
+      <div class="sthumb" style="background:#0a1020;border-color:#3b82f633;font-size:1.2rem">+</div>
+      <span class="sname" style="color:#3b5a8a">Tap to pick your hero</span>
+    </div>`;
+    picker.style.display='block';
+    renderMHG();
+  }
+}
+
+function renderMHG(){
+  const q=(document.getElementById('mhs').value||'').toLowerCase();
+  document.getElementById('mhg').innerHTML=heroList.filter(h=>h.name.toLowerCase().includes(q)).map(h=>{
+    const sel=myHero&&myHero.name===h.name;
+    const s=rs(h);
+    return`<div class="minicard${sel?' dis':''}" onclick="setMyHero('${h.name.replace(/'/g,"\\'")}')">
+      <div class="mthumb" style="background:${s.grad}">
+        <span class="mthumb-e">${h.icon}</span>
+        ${hSrc(h.wn)?`<img class="mthumb-img" src="${hSrc(h.wn)}" alt="${h.name}" loading="lazy" onerror="hErr(this,'${h.wn.replace(/'/g,"\\'")}')">`:''}
+      </div>
+      <div class="mname">${h.name}</div>
+    </div>`;
+  }).join('');
+}
+
 // ── COUNTER TOOL ──────────────────────────────────────────────────
 function addE(name){
   if(enemyTeam.length>=5||enemyTeam.find(h=>h.name===name))return;
@@ -884,34 +951,60 @@ function renderMG(){
 
 function renderCR(){
   const el=document.getElementById('cr');
-  if(!enemyTeam.length){el.innerHTML=`<div class="empty"><div style="font-size:2rem;margin-bottom:8px">👈</div>Select enemy heroes to see counter item recommendations</div>`;return;}
+  if(!enemyTeam.length){
+    el.innerHTML=`<div class="empty"><div style="font-size:2rem;margin-bottom:8px">👈</div>${myHero?`<b style="color:#93c5fd">${myHero.name}</b> selected — now pick enemy heroes`:'Select enemy heroes to see counter item recommendations'}</div>`;
+    return;
+  }
   const sc={};
   enemyTeam.forEach(h=>{
     h.ci.forEach(ci=>{
-      if(!sc[ci.n])sc[ci.n]={e:ci.e,name:ci.n,reasons:[],count:0,prio:'med'};
+      if(!sc[ci.n])sc[ci.n]={e:ci.e,name:ci.n,reasons:[],count:0,prio:'med',fit:false};
       sc[ci.n].reasons.push(`vs <b>${h.name}</b>: ${ci.w}`);
       sc[ci.n].count+=2;
     });
     h.roles.forEach(role=>{
       const ri={
-        Tank:[{e:'🌑',n:'Malefic Roar',w:'Armor pen to shred tank defense',p:'high'},{e:'💠',n:'Divine Glaive',w:'Magic pen vs tanky supports',p:'med'}],
-        Fighter:[{e:'❄️',n:'Dominance Ice',w:'Reduces attack speed & crits',p:'high'},{e:'🧲',n:'Antique Cuirass',w:'Reduces burst physical damage',p:'high'}],
+        Tank:    [{e:'🌑',n:'Malefic Roar',w:'Armor pen to shred tank defense',p:'high'},{e:'💠',n:'Divine Glaive',w:'Magic pen vs tanky supports',p:'med'}],
+        Fighter: [{e:'❄️',n:'Dominance Ice',w:'Reduces attack speed & crits',p:'high'},{e:'🧲',n:'Antique Cuirass',w:'Reduces burst physical damage',p:'high'}],
         Assassin:[{e:'🔵',n:"Athena's Shield",w:'Absorbs burst combo window',p:'high'},{e:'💀',n:'Immortality',w:'Second life after getting burst',p:'high'}],
-        Mage:[{e:'🌑',n:'Radiant Armor',w:'Reduces stacking magic damage',p:'high'},{e:'🔵',n:"Athena's Shield",w:'Absorbs magic burst window',p:'high'}],
+        Mage:    [{e:'🌑',n:'Radiant Armor',w:'Reduces stacking magic damage',p:'high'},{e:'🔵',n:"Athena's Shield",w:'Absorbs magic burst window',p:'high'}],
         Marksman:[{e:'❄️',n:'Dominance Ice',w:'Reduces crit rate and attack speed',p:'high'},{e:'🛡️',n:'Blade Armor',w:'Returns crit damage to shooter',p:'med'}],
-        Support:[{e:'⚡',n:'Necklace of Durance',w:'Reduces healing by 50%',p:'high'},{e:'🗡️',n:'Sea Halberd',w:'Reduces lifesteal and regen on hit',p:'high'}],
+        Support: [{e:'⚡',n:'Necklace of Durance',w:'Reduces healing by 50%',p:'high'},{e:'🗡️',n:'Sea Halberd',w:'Reduces lifesteal and regen on hit',p:'high'}],
       }[role]||[];
       ri.forEach(r=>{
-        if(!sc[r.n])sc[r.n]={e:r.e,name:r.n,reasons:[],count:0,prio:r.p};
+        if(!sc[r.n])sc[r.n]={e:r.e,name:r.n,reasons:[],count:0,prio:r.p,fit:false};
         sc[r.n].reasons.push(`Effective vs ${role} (<b>${h.name}</b>): ${r.w}`);
         sc[r.n].count+=1;
         if(r.p==='high')sc[r.n].prio='high';
       });
     });
   });
+
+  // Boost items that fit the player's hero role
+  if(myHero){
+    const fitItems=myHero.roles.flatMap(r=>MY_ROLE_FIT[r]||[]);
+    Object.values(sc).forEach(item=>{
+      if(fitItems.includes(item.name)){
+        item.count+=3;
+        item.fit=true;
+      } else {
+        // Downrank items that don't suit the player
+        item.count=Math.max(0,item.count-1);
+      }
+    });
+  }
+
   const sorted=Object.values(sc).sort((a,b)=>b.count-a.count).slice(0,8);
-  el.innerHTML=sorted.map(item=>`
-    <div class="crec">
+  const heroLabel=myHero?`<div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;padding:10px 12px;background:#08101888;border:1px solid #3b82f633;border-radius:10px;font-size:.75rem;color:#60a5fa">
+    <div style="width:28px;height:28px;border-radius:7px;overflow:hidden;background:#0a1828;position:relative;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:1rem">
+      ${myHero.icon}
+      ${hSrc(myHero.wn)?`<img src="${hSrc(myHero.wn)}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:top" onerror="this.style.display='none'">`:''}
+    </div>
+    Showing items best suited for <b style="color:#93c5fd;margin:0 4px">${myHero.name}</b> (${myHero.roles.join(' / ')})
+  </div>`:'';
+
+  el.innerHTML=heroLabel+sorted.map(item=>`
+    <div class="crec" style="${item.fit?'border-color:#3b82f655;box-shadow:0 0 20px #3b82f611':''}">
       <div class="crec-h">
         <div class="crecbox">
           <span style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;z-index:1">${item.e}</span>
@@ -919,14 +1012,15 @@ function renderCR(){
         </div>
         <span class="crecname">${item.name}</span>
         <span class="prio ${item.prio==='high'?'ph':'pm'}">${item.prio==='high'?'🔴 HIGH':'🟡 MED'}</span>
+        ${item.fit?`<span style="font-size:.55rem;padding:2px 7px;border-radius:8px;background:#1e3a5f;color:#60a5fa;border:1px solid #3b82f644;font-weight:700">✓ FITS</span>`:''}
       </div>
       <div class="crecreason">${[...new Set(item.reasons)].join('<br>')}</div>
     </div>`).join('')+
-  `<div class="tip">💡 <b style="color:#ccc">Pro tip:</b> Pick 2–3 counter items that fit your hero's build. Always buy <span style="color:#ff6666">HIGH</span> priority items first. Rush anti-heal early vs Estes, Angela, or Uranus.</div>`;
+  `<div class="tip">💡 <b style="color:#ccc">Pro tip:</b> Items marked <span style="color:#60a5fa">✓ FITS</span> are best for your hero's role. Always buy <span style="color:#ff6666">HIGH</span> priority first.</div>`;
 }
 
 // ── INIT ──────────────────────────────────────────────────────────
-renderRF();renderH();renderSlots();renderMG();renderCR();
+renderRF();renderH();renderMyHeroSlot();renderSlots();renderMG();renderCR();
 
 // ── PARTICLE CANVAS ───────────────────────────────────────────────
 (function(){
