@@ -141,6 +141,17 @@ header::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;ba
 .ciname{font-weight:800;font-size:.84rem;color:#34d399;font-family:'Oxanium',sans-serif}
 .ciwhy{font-size:.68rem;color:#4a6a7a;margin-top:3px;line-height:1.4}
 
+/* ── COUNTER BUILD GRID ── */
+.cb-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:4px}
+.cb-item{border-radius:12px;border:1px solid #1a1a3a;background:#08081888;overflow:hidden;transition:all .2s;backdrop-filter:blur(6px);cursor:default}
+.cb-item:hover{transform:translateY(-3px);box-shadow:0 8px 24px #0008}
+.cb-img-wrap{position:relative;width:100%;aspect-ratio:1;background:#0a0a1a;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.cb-emoji{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:1.8rem;z-index:1}
+.cb-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:2}
+.cb-label{padding:6px 6px 7px;background:#04040e88}
+.cb-name{font-size:.6rem;font-weight:700;color:#dde;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cb-type{font-size:.52rem;font-weight:700;margin-top:2px;letter-spacing:.3px}
+
 /* ── COUNTER TOOL ── */
 .twocol{display:grid;grid-template-columns:1fr 1fr;gap:20px}
 .panel{background:#04040e88;border:1px solid #1a1a3a;border-radius:18px;padding:20px;margin-bottom:16px;box-shadow:0 8px 40px #0008;backdrop-filter:blur(10px)}
@@ -949,74 +960,142 @@ function renderMG(){
   }).join('');
 }
 
-function renderCR(){
-  const el=document.getElementById('cr');
-  if(!enemyTeam.length){
-    el.innerHTML=`<div class="empty"><div style="font-size:2rem;margin-bottom:8px">👈</div>${myHero?`<b style="color:#93c5fd">${myHero.name}</b> selected — now pick enemy heroes`:'Select enemy heroes to see counter item recommendations'}</div>`;
-    return;
-  }
+function scoreCounterItems(){
   const sc={};
+  const ROLE_CI={
+    Tank:    [{e:'🌑',n:'Malefic Roar',w:'Armor pen shreds tank defense',p:'high'},{e:'💠',n:'Divine Glaive',w:'Magic pen vs tanky supports',p:'med'}],
+    Fighter: [{e:'❄️',n:'Dominance Ice',w:'Cuts attack speed & crits',p:'high'},{e:'🧲',n:'Antique Cuirass',w:'Reduces burst physical damage',p:'high'}],
+    Assassin:[{e:'🔵',n:"Athena's Shield",w:'Absorbs their burst combo',p:'high'},{e:'💀',n:'Immortality',w:'Second life after burst',p:'high'}],
+    Mage:    [{e:'🌑',n:'Radiant Armor',w:'Reduces stacking magic damage',p:'high'},{e:'🔵',n:"Athena's Shield",w:'Absorbs magic burst window',p:'high'}],
+    Marksman:[{e:'❄️',n:'Dominance Ice',w:'Reduces crit & attack speed',p:'high'},{e:'🛡️',n:'Blade Armor',w:'Returns crit damage to them',p:'med'}],
+    Support: [{e:'⚡',n:'Necklace of Durance',w:'Cuts healing by 50%',p:'high'},{e:'🗡️',n:'Sea Halberd',w:'Reduces lifesteal on hit',p:'high'}],
+  };
   enemyTeam.forEach(h=>{
     h.ci.forEach(ci=>{
-      if(!sc[ci.n])sc[ci.n]={e:ci.e,name:ci.n,reasons:[],count:0,prio:'med',fit:false};
+      if(!sc[ci.n])sc[ci.n]={e:ci.e,n:ci.n,reasons:[],score:0,prio:'med'};
       sc[ci.n].reasons.push(`vs <b>${h.name}</b>: ${ci.w}`);
-      sc[ci.n].count+=2;
+      sc[ci.n].score+=3;
     });
     h.roles.forEach(role=>{
-      const ri={
-        Tank:    [{e:'🌑',n:'Malefic Roar',w:'Armor pen to shred tank defense',p:'high'},{e:'💠',n:'Divine Glaive',w:'Magic pen vs tanky supports',p:'med'}],
-        Fighter: [{e:'❄️',n:'Dominance Ice',w:'Reduces attack speed & crits',p:'high'},{e:'🧲',n:'Antique Cuirass',w:'Reduces burst physical damage',p:'high'}],
-        Assassin:[{e:'🔵',n:"Athena's Shield",w:'Absorbs burst combo window',p:'high'},{e:'💀',n:'Immortality',w:'Second life after getting burst',p:'high'}],
-        Mage:    [{e:'🌑',n:'Radiant Armor',w:'Reduces stacking magic damage',p:'high'},{e:'🔵',n:"Athena's Shield",w:'Absorbs magic burst window',p:'high'}],
-        Marksman:[{e:'❄️',n:'Dominance Ice',w:'Reduces crit rate and attack speed',p:'high'},{e:'🛡️',n:'Blade Armor',w:'Returns crit damage to shooter',p:'med'}],
-        Support: [{e:'⚡',n:'Necklace of Durance',w:'Reduces healing by 50%',p:'high'},{e:'🗡️',n:'Sea Halberd',w:'Reduces lifesteal and regen on hit',p:'high'}],
-      }[role]||[];
-      ri.forEach(r=>{
-        if(!sc[r.n])sc[r.n]={e:r.e,name:r.n,reasons:[],count:0,prio:r.p,fit:false};
-        sc[r.n].reasons.push(`Effective vs ${role} (<b>${h.name}</b>): ${r.w}`);
-        sc[r.n].count+=1;
+      (ROLE_CI[role]||[]).forEach(r=>{
+        if(!sc[r.n])sc[r.n]={e:r.e,n:r.n,reasons:[],score:0,prio:r.p};
+        sc[r.n].reasons.push(`vs ${role} <b>${h.name}</b>: ${r.w}`);
+        sc[r.n].score+=1;
         if(r.p==='high')sc[r.n].prio='high';
       });
     });
   });
+  return Object.values(sc).sort((a,b)=>b.score-a.score);
+}
 
-  // Boost items that fit the player's hero role
-  if(myHero){
-    const fitItems=myHero.roles.flatMap(r=>MY_ROLE_FIT[r]||[]);
-    Object.values(sc).forEach(item=>{
-      if(fitItems.includes(item.name)){
-        item.count+=3;
-        item.fit=true;
-      } else {
-        // Downrank items that don't suit the player
-        item.count=Math.max(0,item.count-1);
-      }
-    });
+function buildCounterBuild(hero){
+  const ranked=scoreCounterItems();
+  const base=[...hero.build]; // 6 items, index 0 = boots
+  const inBuild=new Set(base.map(i=>i.n));
+  // Counter items not already in the build
+  const toInsert=ranked.filter(ci=>!inBuild.has(ci.n));
+  // Build the final 6 slots
+  const slots=base.map((item,idx)=>{
+    const counterMatch=ranked.find(ci=>ci.n===item.n);
+    return{...item,kind:counterMatch?'both':'core',reasons:counterMatch?counterMatch.reasons:[],prio:counterMatch?counterMatch.prio:'med'};
+  });
+  // Replace from slot 5 down (keep boots at 0), swapping in counter items
+  let ins=0;
+  for(let i=5;i>=1&&ins<toInsert.length;i--){
+    if(slots[i].kind==='core'){
+      const ci=toInsert[ins++];
+      slots[i]={n:ci.n,e:ci.e,t:'Counter',kind:'counter',reasons:ci.reasons,prio:ci.prio};
+    }
+  }
+  return slots;
+}
+
+function itemBox(item,idx){
+  const isCounter=item.kind==='counter';
+  const isBoth=item.kind==='both';
+  const borderCol=isCounter?'#ef444466':isBoth?'#f59e0b66':'#1a1a3a';
+  const glowCol=isCounter?'#ef444422':isBoth?'#f59e0b22':'none';
+  const badge=isCounter?`<span style="position:absolute;top:3px;right:3px;background:#ef444488;color:#fff;font-size:.42rem;font-weight:800;padding:1px 4px;border-radius:4px;z-index:10;letter-spacing:.5px">COUNTER</span>`
+    :isBoth?`<span style="position:absolute;top:3px;right:3px;background:#f59e0b88;color:#000;font-size:.42rem;font-weight:800;padding:1px 4px;border-radius:4px;z-index:10;letter-spacing:.5px">CORE+</span>`:'';
+  const numBadge=`<span style="position:absolute;top:3px;left:3px;background:#000a;color:#888;font-size:.42rem;font-weight:800;padding:1px 4px;border-radius:4px;z-index:10">${idx+1}</span>`;
+  return`<div class="cb-item" style="border-color:${borderCol};box-shadow:0 0 18px ${glowCol}" title="${item.n}${item.reasons.length?'\n'+item.reasons.map(r=>r.replace(/<[^>]+>/g,'')).join('\n'):''}">
+    <div class="cb-img-wrap">
+      ${numBadge}${badge}
+      <span class="cb-emoji">${item.e}</span>
+      <img class="cb-img" src="${iSrc(item.n)}" alt="${item.n}" loading="lazy" onerror="this.style.display='none'">
+    </div>
+    <div class="cb-label">
+      <div class="cb-name">${item.n}</div>
+      <div class="cb-type" style="color:${isCounter?'#f87171':isBoth?'#fbbf24':'#6b7280'}">${item.t}</div>
+    </div>
+  </div>`;
+}
+
+function renderCR(){
+  const el=document.getElementById('cr');
+  if(!enemyTeam.length){
+    el.innerHTML=`<div class="empty"><div style="font-size:2rem;margin-bottom:10px">👈</div>${myHero?`<b style="color:#93c5fd">${myHero.name}</b> is ready — now pick enemy heroes`:'Pick your hero + enemy team to get a full counter build'}</div>`;
+    return;
   }
 
-  const sorted=Object.values(sc).sort((a,b)=>b.count-a.count).slice(0,8);
-  const heroLabel=myHero?`<div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;padding:10px 12px;background:#08101888;border:1px solid #3b82f633;border-radius:10px;font-size:.75rem;color:#60a5fa">
-    <div style="width:28px;height:28px;border-radius:7px;overflow:hidden;background:#0a1828;position:relative;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:1rem">
-      ${myHero.icon}
-      ${hSrc(myHero.wn)?`<img src="${hSrc(myHero.wn)}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:top" onerror="this.style.display='none'">`:''}
-    </div>
-    Showing items best suited for <b style="color:#93c5fd;margin:0 4px">${myHero.name}</b> (${myHero.roles.join(' / ')})
-  </div>`:'';
-
-  el.innerHTML=heroLabel+sorted.map(item=>`
-    <div class="crec" style="${item.fit?'border-color:#3b82f655;box-shadow:0 0 20px #3b82f611':''}">
+  if(!myHero){
+    // No hero selected: show top counter items as before
+    const ranked=scoreCounterItems().slice(0,6);
+    el.innerHTML=`<div style="margin-bottom:14px;padding:10px 12px;background:#1a100088;border:1px solid #f59e0b33;border-radius:10px;font-size:.74rem;color:#f59e0b">
+      ⬆️ Pick <b>Your Hero</b> above for a personalized full build recommendation
+    </div>`+ranked.map(item=>`
+    <div class="crec">
       <div class="crec-h">
-        <div class="crecbox">
-          <span style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;z-index:1">${item.e}</span>
-          <img class="crecbox-img" src="${iSrc(item.name)}" alt="${item.name}" loading="lazy" onerror="iErr(this,'${item.name}',0)">
-        </div>
-        <span class="crecname">${item.name}</span>
+        <div class="crecbox"><span style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;z-index:1">${item.e}</span>
+          <img class="crecbox-img" src="${iSrc(item.n)}" alt="${item.n}" loading="lazy" onerror="iErr(this,'${item.n}',0)"></div>
+        <span class="crecname">${item.n}</span>
         <span class="prio ${item.prio==='high'?'ph':'pm'}">${item.prio==='high'?'🔴 HIGH':'🟡 MED'}</span>
-        ${item.fit?`<span style="font-size:.55rem;padding:2px 7px;border-radius:8px;background:#1e3a5f;color:#60a5fa;border:1px solid #3b82f644;font-weight:700">✓ FITS</span>`:''}
       </div>
       <div class="crecreason">${[...new Set(item.reasons)].join('<br>')}</div>
     </div>`).join('')+
-  `<div class="tip">💡 <b style="color:#ccc">Pro tip:</b> Items marked <span style="color:#60a5fa">✓ FITS</span> are best for your hero's role. Always buy <span style="color:#ff6666">HIGH</span> priority first.</div>`;
+    `<div class="tip">💡 Select your hero above to get a full 6-item build tailored to counter this enemy team.</div>`;
+    return;
+  }
+
+  // Full 6-item counter build
+  const slots=buildCounterBuild(myHero);
+  const counterCount=slots.filter(s=>s.kind==='counter').length;
+  const bothCount=slots.filter(s=>s.kind==='both').length;
+
+  // Reasoning section: only counter + both items
+  const reasonItems=slots.filter(s=>s.kind!=='core'&&s.reasons.length);
+
+  el.innerHTML=`
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;padding:12px 14px;background:#06060e88;border:1px solid #ffffff11;border-radius:12px">
+    <div style="width:40px;height:40px;border-radius:10px;overflow:hidden;background:#0a0a1a;position:relative;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:1.3rem;border:1px solid #3b82f644">
+      ${myHero.icon}
+      ${hSrc(myHero.wn)?`<img src="${hSrc(myHero.wn)}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:top" onerror="this.style.display='none'">`:''}
+    </div>
+    <div>
+      <div style="font-size:.82rem;font-weight:800;color:#fff;font-family:'Oxanium',sans-serif">${myHero.name} — Counter Build</div>
+      <div style="font-size:.65rem;color:#555;margin-top:2px">${counterCount} counter swap${counterCount!==1?'s':''} · ${bothCount} core+counter overlap</div>
+    </div>
+  </div>
+
+  <div class="cb-grid">${slots.map((s,i)=>itemBox(s,i)).join('')}</div>
+
+  <div style="display:flex;gap:10px;margin:14px 0 10px;font-size:.62rem;flex-wrap:wrap">
+    <span style="display:flex;align-items:center;gap:5px"><span style="width:10px;height:10px;border-radius:3px;background:#ef444466;border:1px solid #ef4444;display:inline-block"></span><span style="color:#888">Counter swap</span></span>
+    <span style="display:flex;align-items:center;gap:5px"><span style="width:10px;height:10px;border-radius:3px;background:#f59e0b66;border:1px solid #f59e0b;display:inline-block"></span><span style="color:#888">Core + counter</span></span>
+    <span style="display:flex;align-items:center;gap:5px"><span style="width:10px;height:10px;border-radius:3px;background:#1a1a3a;border:1px solid #2a2a5a;display:inline-block"></span><span style="color:#888">Standard core</span></span>
+  </div>
+
+  ${reasonItems.length?`<div style="font-size:.68rem;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:#f59e0b;margin:14px 0 8px;font-family:'Oxanium',sans-serif">Why these counter items?</div>
+  ${reasonItems.map(item=>`<div class="crec" style="border-color:${item.kind==='counter'?'#ef444444':'#f59e0b44'}">
+    <div class="crec-h">
+      <div class="crecbox"><span style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;z-index:1">${item.e}</span>
+        <img class="crecbox-img" src="${iSrc(item.n)}" alt="${item.n}" loading="lazy" onerror="iErr(this,'${item.n}',0)"></div>
+      <span class="crecname">${item.n}</span>
+      <span class="prio ${item.prio==='high'?'ph':'pm'}">${item.prio==='high'?'🔴 HIGH':'🟡 MED'}</span>
+    </div>
+    <div class="crecreason">${[...new Set(item.reasons)].join('<br>')}</div>
+  </div>`).join('')}`:''}
+  <div class="tip">💡 <b style="color:#ccc">Tip:</b> Buy items in order 1→6. Rush <span style="color:#f87171">counter items</span> earlier if the enemy threat is high.</div>`;
 }
 
 // ── INIT ──────────────────────────────────────────────────────────
