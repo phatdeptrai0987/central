@@ -75,8 +75,8 @@ header::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;ba
 .hero-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:14px}
 .hero-card{border-radius:16px;cursor:pointer;transition:all .3s cubic-bezier(.175,.885,.32,1.275);overflow:hidden;border:1px solid #1a1a3500;background:linear-gradient(160deg,#0c0c1e,#080812);position:relative;box-shadow:0 4px 20px #0008}
 .hero-card::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,#ffffff0a,transparent 60%);pointer-events:none;z-index:5;border-radius:16px}
-.hero-card::after{content:'';position:absolute;inset:0;border-radius:16px;border:1px solid transparent;background:linear-gradient(#0c0c1e,#080812) padding-box,linear-gradient(135deg,#2a2a4a,#1a1a3a) border-box;pointer-events:none;z-index:6;transition:all .3s}
-.hero-card:hover::after{background:linear-gradient(#0c0c1e,#080812) padding-box,linear-gradient(135deg,#f59e0b,#7c3aed,#06b6d4) border-box}
+.hero-card::after{content:'';position:absolute;inset:0;border-radius:16px;border:1px solid transparent;background:transparent padding-box,linear-gradient(135deg,#2a2a4a,#1a1a3a) border-box;pointer-events:none;z-index:8;transition:all .3s}
+.hero-card:hover::after{background:transparent padding-box,linear-gradient(135deg,#f59e0b,#7c3aed,#06b6d4) border-box}
 .hero-card:hover{transform:translateY(-8px) scale(1.03);box-shadow:0 20px 60px #f59e0b33,0 0 40px #7c3aed22}
 
 /* ── PORTRAIT ── */
@@ -200,7 +200,7 @@ header::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;ba
     <div class="htitle">MLBB Builds &amp; Counters</div>
     <div class="hsub">Meta Builds · Hero Matchups · Counter Items</div>
   </div>
-  <div class="hbadge">⚡ Season 2025</div>
+  <div class="hbadge">⚡ Season 2026</div>
 </header>
 <div class="tabs">
   <button class="tab active" onclick="switchTab('builds')">🗡️ Hero Builds</button>
