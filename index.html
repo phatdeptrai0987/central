@@ -992,16 +992,15 @@ function buildCounterBuild(hero){
   const ranked=scoreCounterItems();
   const base=[...hero.build]; // 6 items, index 0 = boots
   const inBuild=new Set(base.map(i=>i.n));
-  // Counter items not already in the build
-  const toInsert=ranked.filter(ci=>!inBuild.has(ci.n));
-  // Build the final 6 slots
-  const slots=base.map((item,idx)=>{
+  // Mark slots that are already counter items (double duty)
+  const slots=base.map((item)=>{
     const counterMatch=ranked.find(ci=>ci.n===item.n);
     return{...item,kind:counterMatch?'both':'core',reasons:counterMatch?counterMatch.reasons:[],prio:counterMatch?counterMatch.prio:'med'};
   });
-  // Replace from slot 5 down (keep boots at 0), swapping in counter items
+  // Only replace the last 2 slots (slots 5 & 6, indices 4 & 5) — keep the hero's core build intact
+  const toInsert=ranked.filter(ci=>!inBuild.has(ci.n));
   let ins=0;
-  for(let i=5;i>=1&&ins<toInsert.length;i--){
+  for(let i=5;i>=4&&ins<toInsert.length;i--){
     if(slots[i].kind==='core'){
       const ci=toInsert[ins++];
       slots[i]={n:ci.n,e:ci.e,t:'Counter',kind:'counter',reasons:ci.reasons,prio:ci.prio};
