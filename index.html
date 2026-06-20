@@ -2,7 +2,8 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover"/>
+<meta name="theme-color" content="#050510"/><meta name="mobile-web-app-capable" content="yes"/><meta name="apple-mobile-web-app-capable" content="yes"/><link rel="manifest" href="manifest.webmanifest"/><link rel="icon" href="app-icon.svg" type="image/svg+xml"/><link rel="stylesheet" href="app.css"/>
 <title>MLBB Builds & Counters</title>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Oxanium:wght@400;600;800&display=swap" rel="stylesheet">
 <style>
@@ -220,11 +221,12 @@ header::after{content:'';position:absolute;bottom:0;left:0;right:0;height:1px;ba
     <div class="htitle">MLBB Builds &amp; Counters</div>
     <div class="hsub">Meta Builds · Hero Matchups · Counter Items</div>
   </div>
-  <div class="hbadge">⚡ Season 2026</div>
+  <div class="hbadge">⚡ Season 2026</div><button class="install-btn" id="install-app-btn" hidden>Install App</button>
 </header>
 <div class="tabs">
   <button class="tab active" onclick="switchTab('builds')">🗡️ Hero Builds</button>
   <button class="tab" onclick="switchTab('counter')">🛡️ Counter Tool</button>
+  <button class="tab" onclick="switchTab('live')">⚡ Live Match</button>
 </div>
 <div class="content">
   <div id="page-builds" class="page active">
@@ -259,6 +261,7 @@ header::after{content:'';position:absolute;bottom:0;left:0;right:0;height:1px;ba
       <div class="panel"><h3 style="color:#4aff88">🟢 Recommended Counter Items</h3><div id="cr"></div></div>
     </div>
   </div>
+  <div id="page-live" class="page"><div class="live-shell" id="live-match"></div></div>
 </div>
 <div class="moverlay hidden" id="mo" onclick="closeOut(event)">
   <div class="modal" id="mb"><button class="mclose" onclick="closeM()">✕</button><div id="mc"></div></div>
@@ -1163,5 +1166,6 @@ renderRF();renderH();renderMyHeroSlot();renderSlots();renderMG();renderCR();
   draw();
 })();
 </script>
+<script src="app.js"></script>
 </body>
 </html>
