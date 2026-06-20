@@ -49,6 +49,27 @@ function renderScanResults(){
  html+='</div><button class="live-setup" onclick="switchTab(\'live\')">Open Live Build</button><details><summary class="scan-sub">Show text Central read</summary><div class="ocr-raw">'+scanData.text.replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]))+'</div></details>';
  el.innerHTML=html;
 }
+const scanBaseBuild=buildCounterBuild;
+buildCounterBuild=function(hero){
+ const build=scanBaseBuild(hero),live=JSON.parse(localStorage.getItem('central-live-kda')||'null');
+ if(!live)return build;
+ if(live.k>=5&&live.k>=live.d*2&&hero.build[4]){
+  const original=hero.build[4];
+  build[4]={...original,kind:'core',reasons:[`Ahead at ${live.k}/${live.d}/${live.a}: keep your power-spike item`],prio:'med'};
+  return build;
+ }
+ if(live.d>=4&&live.d>live.k){
+  const magic=enemyTeam.filter(h=>h.roles.includes('Mage')).length;
+  const physical=enemyTeam.filter(h=>h.roles.some(r=>['Marksman','Fighter','Assassin'].includes(r))).length;
+  const name=magic>physical?"Athena's Shield":'Immortality';
+  const base=Object.values(DB).flat().find(i=>i.n===name)||{n:name,e:name==='Immortality'?'💀':'🔵',t:'Defense'};
+  const reason=`Your ${live.k}/${live.d}/${live.a} KDA shows you need ${magic>physical?'magic burst protection':'a safer second life'}`;
+  const existing=build.find(i=>i.n===name);
+  if(existing){existing.kind='both';existing.reasons=[reason];existing.prio='high';}
+  else build[4]={...base,kind:'counter',reasons:[reason],prio:'high'};
+ }
+ return build;
+};
 const scanBaseSwitch=switchTab;switchTab=function(t){scanBaseSwitch(t);if(t==='scan')renderScanTool();};
 const scanBaseLive=renderLiveMatch;renderLiveMatch=function(){scanBaseLive();const saved=JSON.parse(localStorage.getItem('central-live-kda')||'null'),sub=document.querySelector('#live-match .live-sub');if(saved&&sub)sub.textContent+=' · KDA '+saved.k+'/'+saved.d+'/'+saved.a;};
 renderScanTool();
