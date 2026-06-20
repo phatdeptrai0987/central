@@ -15,7 +15,7 @@ function renderLiveMatch(){
  <div class="live-card"><div class="build-track">${b.map((v,i)=>`<div class="track-item ${i<purchaseIndex?'bought':i===purchaseIndex?'current':''}"><div class="track-img">${v.e}<img src="${iSrc(v.n)}" alt="${v.n}" onerror="this.style.display='none'"></div><div class="track-name">${i+1}. ${v.n}</div></div>`).join('')}</div></div>
  <div class="live-card"><div class="enemy-row">${enemyTeam.map(h=>`<div class="enemy-chip">${appAvatar(h)}${h.name}</div>`).join('')}</div></div>`;
 }
-switchTab=function(t){document.querySelectorAll('.tab').forEach((el,i)=>el.classList.toggle('active',['builds','counter','live'][i]===t));document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));document.getElementById('page-'+t).classList.add('active');if(t==='live')renderLiveMatch();};
+switchTab=function(t){document.querySelectorAll('.tab').forEach((el,i)=>el.classList.toggle('active',['builds','counter','live','scan'][i]===t));document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));document.getElementById('page-'+t).classList.add('active');if(t==='live')renderLiveMatch();};
 const baseSet=setMyHero;setMyHero=function(n){baseSet(n);purchaseIndex=0;saveAppMatch();renderLiveMatch();};
 const baseClear=clearMyHero;clearMyHero=function(){baseClear();purchaseIndex=0;saveAppMatch();renderLiveMatch();};
 const baseAdd=addE;addE=function(n){baseAdd(n);purchaseIndex=0;saveAppMatch();renderLiveMatch();};
