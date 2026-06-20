@@ -76,7 +76,7 @@ async function scanScreenshot(file){
   const out=await worker.recognize(scanImage);await worker.terminate();scanData={...parseScanText(out.data.text||''),portraits};
   const mine=portraits.find(p=>p.isMe),kdaIndex=mine?(mine.side==='ally'?mine.row:5+mine.row):-1;
   if(kdaIndex>=0&&scanData.kdas[kdaIndex]&&(mine.side==='ally'||scanData.kdas.length===10)){const v=scanData.kdas[kdaIndex];localStorage.setItem('central-live-kda',JSON.stringify(v));}
-  updateScanProgress(1,'Scan complete');renderScanResults();
+  applyDetectedMatch();updateScanProgress(1,'Match detected and build updated');
  }catch(e){document.getElementById('scan-results').innerHTML=`<div class="scan-error">Could not scan this image: ${e.message}. Try a clear landscape scoreboard screenshot.</div>`;updateScanProgress(0,'Scan failed');}
 }
 function applyScannedHero(name,type){if(type==='me')setMyHero(name);else addE(name);saveAppMatch();renderScanResults();}
@@ -85,16 +85,16 @@ function applyDetectedEnemies(){scanData.portraits.filter(p=>p.side==='enemy').f
 function applyDetectedMatch(){
  const mine=scanData.portraits.find(p=>p.isMe);if(mine)setMyHero(mine.hero);
  enemyTeam=[];scanData.portraits.filter(p=>p.isOpponent).forEach(p=>{const h=heroList.find(v=>v.name===p.hero);if(h&&!enemyTeam.some(e=>e.name===h.name))enemyTeam.push(h);});
- purchaseIndex=0;renderSlots();renderMG();renderCR();saveAppMatch();renderLiveMatch();renderScanResults();
+ scanData.applied=true;purchaseIndex=0;renderSlots();renderMG();renderCR();saveAppMatch();renderLiveMatch();renderScanResults();
 }
-function changePortrait(side,row,name){const match=scanData.portraits.find(p=>p.side===side&&p.row===row);if(match){match.alternatives=[match.hero,...match.alternatives.filter(n=>n!==name)].slice(0,2);match.hero=name;match.confidence='confirmed';renderScanResults();}}
+function changePortrait(side,row,name){const match=scanData.portraits.find(p=>p.side===side&&p.row===row);if(match){match.alternatives=[match.hero,...match.alternatives.filter(n=>n!==name)].slice(0,2);match.hero=name;match.confidence='confirmed';scanData.applied?applyDetectedMatch():renderScanResults();}}
 function manualPortrait(side,row){const typed=prompt('Type the correct hero name');if(!typed)return;const hero=heroList.find(h=>h.name.toLowerCase()===typed.trim().toLowerCase());if(hero)changePortrait(side,row,hero.name);else alert('Hero not found. Check the spelling and try again.');}
 function renderScanResults(){
  const el=document.getElementById('scan-results'),saved=JSON.parse(localStorage.getItem('central-live-kda')||'null');
  let html='';
  html+='<div class="scan-section">Portrait matches</div>';
  html+=scanData.portraits?.length?scanData.portraits.map(p=>{const h=heroList.find(x=>x.name===p.hero),alts=p.alternatives.map(n=>`<button class="scan-action" onclick="changePortrait('${p.side}',${p.row},'${n.replace(/'/g,"\\'")}')">${n}</button>`).join(''),label=p.isMe?'YOU':p.isOpponent?'OPPONENT':'ALLY';return`<div class="detected-row" style="${p.isMe?'border-color:#3b82f688;box-shadow:0 0 20px #3b82f622':p.isOpponent?'border-color:#ef444433':''}">${appAvatar(h)}<div class="detected-name">${p.hero}<div class="kda-label">${label} · ${p.confidence==='confirmed'?'CONFIRMED':p.confidence+'% match'}</div><div class="scan-actions">${alts}<button class="scan-action" onclick="manualPortrait('${p.side}',${p.row})">Change…</button></div></div></div>`;}).join(''):'<div class="scan-sub">Portrait matching will appear after scanning.</div>';
- if(scanData.portraits?.length)html+='<button class="live-setup" onclick="applyDetectedMatch()">Use Detected Match</button>';
+ if(scanData.portraits?.length)html+=scanData.applied?'<div class="detected-row" style="border-color:#22c55e55;color:#4ade80">✓ Your hero, opponents, and build were applied automatically.</div><button class="live-setup" onclick="switchTab(\'live\')">Open Live Build</button>':'<div class="scan-sub">Applying detected match…</div>';
  if(scanData.heroes.length)html+='<div class="scan-section">Names found in text</div>'+scanData.heroes.map(n=>'<span class="scan-sub">'+n+'</span>').join(' · ');
  html+='<div class="scan-section">Detected KDA</div><div class="kda-grid">';
  html+=scanData.kdas.length?scanData.kdas.map(v=>`<button class="kda-card scan-action" onclick="setScanKda(${v.k},${v.d},${v.a})"><div class="kda-value">${v.k} / ${v.d} / ${v.a}</div><div class="kda-label">${saved&&saved.k===v.k&&saved.d===v.d&&saved.a===v.a?'✓ YOUR KDA':'TAP IF THIS IS YOU'}</div></button>`).join(''):'<div class="scan-sub">No K/D/A pattern was found.</div>';
