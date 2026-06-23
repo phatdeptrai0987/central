@@ -584,6 +584,12 @@
   </main>
 
   <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistrations()
+        .then(registrations => registrations.forEach(registration => registration.unregister()))
+        .catch(() => {});
+    }
+
     const HEROES = [
       ['Tigreal','Tank','🛡️'],['Franco','Tank','⚓'],['Minotaur','Tank','🐂'],['Lolita','Tank,Support','🔨'],
       ['Akai','Tank','🐼'],['Johnson','Tank','🚗'],['Grock','Tank','🪨'],['Hylos','Tank','🐎'],['Uranus','Tank','🪐'],
