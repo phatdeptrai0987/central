@@ -1,1174 +1,1174 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover"/>
-<meta name="theme-color" content="#050510"/><meta name="mobile-web-app-capable" content="yes"/><meta name="apple-mobile-web-app-capable" content="yes"/><link rel="manifest" href="manifest.webmanifest"/><link rel="icon" href="app-icon.svg" type="image/svg+xml"/><link rel="stylesheet" href="app.css"/><link rel="stylesheet" href="scanner.css"/>
-<title>MLBB Builds & Counters</title>
-<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Oxanium:wght@400;600;800&display=swap" rel="stylesheet">
-<style>
-*{box-sizing:border-box;margin:0;padding:0}
-body{background:#010108;color:#dde0ff;font-family:'Rajdhani',sans-serif;min-height:100vh;overflow-x:hidden}
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>MLBB Builds & Counters</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #080910;
+      --panel: #10131d;
+      --panel-2: #151a26;
+      --line: #273044;
+      --text: #f5f7fb;
+      --muted: #98a3b7;
+      --blue: #55c7ff;
+      --green: #6ee7a8;
+      --red: #ff6b6b;
+      --gold: #ffd166;
+      --violet: #b49cff;
+    }
 
-/* ── NOISE TEXTURE ── */
-body::before{content:'';position:fixed;inset:0;opacity:.022;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");pointer-events:none;z-index:1}
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background:
+        radial-gradient(circle at top left, rgba(85,199,255,.16), transparent 32rem),
+        radial-gradient(circle at bottom right, rgba(110,231,168,.12), transparent 34rem),
+        var(--bg);
+      color: var(--text);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      letter-spacing: 0;
+    }
 
-/* ── CANVAS BG ── */
-#bg-canvas{position:fixed;inset:0;z-index:0;pointer-events:none}
+    button, input { font: inherit; }
+    button { cursor: pointer; }
 
-/* ── FLOATING ORBS ── */
-.orb{position:fixed;border-radius:50%;filter:blur(100px);pointer-events:none;z-index:0;animation:drift 22s ease-in-out infinite}
-.orb1{width:600px;height:600px;background:radial-gradient(#6d28d955,transparent 70%);top:-150px;left:-150px;animation-duration:28s}
-.orb2{width:450px;height:450px;background:radial-gradient(#f59e0b2a,transparent 70%);top:25%;right:-120px;animation-duration:20s;animation-delay:-9s}
-.orb3{width:400px;height:400px;background:radial-gradient(#0891b22a,transparent 70%);bottom:-100px;left:25%;animation-duration:24s;animation-delay:-16s}
-.orb4{width:350px;height:350px;background:radial-gradient(#dc262618,transparent 70%);bottom:15%;right:15%;animation-duration:32s;animation-delay:-6s}
-@keyframes drift{
-  0%,100%{transform:translate(0,0) scale(1)}
-  25%{transform:translate(70px,-50px) scale(1.08)}
-  50%{transform:translate(-40px,70px) scale(.93)}
-  75%{transform:translate(50px,35px) scale(1.04)}
-}
+    .app {
+      width: min(1420px, 100%);
+      margin: 0 auto;
+      padding: 18px;
+      display: grid;
+      grid-template-columns: 300px 1fr 340px;
+      gap: 14px;
+    }
 
-/* ── GRID OVERLAY ── */
-body::after{content:'';position:fixed;inset:0;background-image:
-  linear-gradient(rgba(109,40,217,.05) 1px,transparent 1px),
-  linear-gradient(90deg,rgba(109,40,217,.05) 1px,transparent 1px);
-  background-size:60px 60px;pointer-events:none;z-index:0;
-  mask-image:radial-gradient(ellipse 70% 70% at 50% 40%,black 40%,transparent 100%)}
+    header {
+      grid-column: 1 / -1;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 8px 2px 2px;
+    }
 
-::-webkit-scrollbar{width:4px}
-::-webkit-scrollbar-track{background:#010108}
-::-webkit-scrollbar-thumb{background:linear-gradient(#f59e0b,#7c3aed);border-radius:4px}
+    h1 {
+      margin: 0;
+      font-size: clamp(1.35rem, 3vw, 2.35rem);
+      line-height: 1.05;
+    }
 
-/* ── HEADER ── */
-header{position:relative;z-index:10;background:linear-gradient(135deg,#05010e 0%,#0b0318 60%,#030b16 100%);padding:22px 40px;border-bottom:1px solid #ffffff06;display:flex;align-items:center;gap:20px;box-shadow:0 1px 0 #7c3aed22,0 12px 80px #000c}
-header::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,#7c3aed06,transparent 50%,#06b6d404);pointer-events:none}
-header::after{content:'';position:absolute;bottom:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,#7c3aed99,#f59e0b,#06b6d499,transparent);animation:shimmer 5s linear infinite;background-size:200% 100%}
-@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
-.hlogo{width:54px;height:54px;border-radius:15px;background:linear-gradient(135deg,#5b21b6,#d97706);display:flex;align-items:center;justify-content:center;font-size:1.7rem;flex-shrink:0;position:relative;box-shadow:0 0 0 1px #ffffff10,0 8px 32px #7c3aed44}
-.hlogo::before{content:'';position:absolute;inset:-1px;border-radius:16px;background:linear-gradient(135deg,#f59e0b,#7c3aed,#06b6d4,#f59e0b);background-size:300% 300%;animation:gradshift 4s linear infinite;z-index:-1;opacity:.6}
-@keyframes gradshift{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
-.htitle{font-family:'Oxanium',sans-serif;font-size:1.85rem;font-weight:800;background:linear-gradient(100deg,#fbbf24 0%,#f59e0b 20%,#c084fc 55%,#38bdf8 85%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:3px;text-transform:uppercase}
-.hsub{color:#2e2e52;font-size:.72rem;margin-top:4px;letter-spacing:2.5px;text-transform:uppercase;font-family:'Oxanium',sans-serif}
-.hbadge{margin-left:auto;background:linear-gradient(135deg,#1a0e0033,#0e0a2233);border:1px solid #f59e0b33;border-radius:22px;padding:7px 18px;font-size:.7rem;color:#d97706;font-weight:700;letter-spacing:1.5px;font-family:'Oxanium',sans-serif}
+    .meta {
+      color: var(--muted);
+      font-size: .9rem;
+      text-align: right;
+    }
 
-/* ── TABS ── */
-.tabs{position:relative;z-index:10;display:flex;gap:4px;padding:16px 40px 0}
-.tab{padding:11px 28px;border-radius:12px 12px 0 0;cursor:pointer;font-weight:700;font-size:.86rem;border:none;transition:all .2s ease;font-family:'Oxanium',sans-serif;letter-spacing:1.5px}
-.tab.active{background:linear-gradient(160deg,#d97706,#b45309);color:#fff8e6;box-shadow:0 -2px 24px #f59e0b44,0 -1px 0 #f59e0b inset}
-.tab:not(.active){background:transparent;color:#2e2e5a;border:1px solid #12122a;border-bottom:none;backdrop-filter:blur(12px)}
-.tab:not(.active):hover{color:#f59e0b99;border-color:#2a2a4a;background:#0a0a1844}
+    .panel {
+      background: color-mix(in srgb, var(--panel) 90%, transparent);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      min-width: 0;
+      overflow: hidden;
+      box-shadow: 0 14px 40px rgba(0,0,0,.22);
+    }
 
-/* ── CONTENT ── */
-.content{position:relative;z-index:5;padding:28px 40px;max-width:1600px;margin:0 auto}
-.page{display:none}.page.active{display:block}
+    .panel-head {
+      min-height: 54px;
+      padding: 14px;
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
 
-/* ── FILTERS ── */
-.filters{display:flex;gap:10px;margin-bottom:24px;flex-wrap:wrap;align-items:center}
-.search-wrap{position:relative;flex:1;min-width:220px}
-.search-wrap::before{content:'🔍';position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:.82rem;pointer-events:none;z-index:1}
-.search-box{width:100%;padding:11px 16px 11px 44px;border-radius:14px;border:1px solid #12122a;background:#06060e88;color:#dde0ff;font-size:.9rem;outline:none;font-family:'Rajdhani',sans-serif;transition:all .25s;backdrop-filter:blur(14px)}
-.search-box:focus{border-color:#f59e0b88;box-shadow:0 0 0 3px #f59e0b14,0 0 24px #f59e0b18}
-.search-box::placeholder{color:#252540}
-.role-btn{padding:8px 18px;border-radius:22px;border:1px solid #12122a;background:#06060e88;color:#353560;cursor:pointer;font-size:.76rem;font-weight:700;transition:all .2s;font-family:'Oxanium',sans-serif;letter-spacing:.8px;backdrop-filter:blur(12px)}
-.role-btn.active{background:linear-gradient(135deg,#d97706,#b45309);color:#fff8e6;border-color:transparent;box-shadow:0 2px 16px #f59e0b44}
-.role-btn:hover:not(.active){border-color:#f59e0b44;color:#f59e0b88;background:#0e0e1e88}
-.hcount{color:#1e1e3e;font-size:.73rem;margin-left:auto;font-weight:600;font-family:'Oxanium',sans-serif;letter-spacing:1px}
+    .panel-title {
+      margin: 0;
+      font-size: .95rem;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      color: #d9e3f5;
+    }
 
-/* ── HERO GRID ── */
-.hero-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:12px}
-.hero-card{border-radius:16px;cursor:pointer;transition:transform .3s cubic-bezier(.175,.885,.32,1.275),box-shadow .3s ease,border-color .3s ease;overflow:hidden;background:linear-gradient(160deg,#0a0a1a,#06060e);position:relative;box-shadow:0 2px 12px #0008}
-.hero-card::after{content:'';position:absolute;inset:0;border-radius:16px;border:1px solid #12122a;background:transparent;pointer-events:none;z-index:8;transition:border-color .3s}
-.hero-card:hover::after{border-color:#f59e0b88}
-.hero-card:hover{transform:translateY(-8px) scale(1.035);box-shadow:0 24px 64px #0009,0 0 0 0 transparent}
-/* Role-tinted card glows on hover */
-.hero-card[data-role="Tank"]:hover{box-shadow:0 20px 50px #06b6d422,0 0 30px #06b6d411}
-.hero-card[data-role="Fighter"]:hover{box-shadow:0 20px 50px #f9731622,0 0 30px #f9731611}
-.hero-card[data-role="Assassin"]:hover{box-shadow:0 20px 50px #a855f722,0 0 30px #a855f711}
-.hero-card[data-role="Mage"]:hover{box-shadow:0 20px 50px #60a5fa22,0 0 30px #60a5fa11}
-.hero-card[data-role="Marksman"]:hover{box-shadow:0 20px 50px #86efac22,0 0 30px #86efac11}
-.hero-card[data-role="Support"]:hover{box-shadow:0 20px 50px #fde04722,0 0 30px #fde04711}
+    .search {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #0b0d14;
+      color: var(--text);
+      padding: 11px 12px;
+      outline: none;
+    }
 
-/* ── PORTRAIT ── */
-.portrait{width:100%;aspect-ratio:3/4;position:relative;overflow:hidden;background:#06060e}
-.p-emoji{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:3rem;z-index:1;pointer-events:none;opacity:.4}
-.p-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:top center;z-index:2;transition:transform .45s cubic-bezier(.25,.46,.45,.94)}
-.hero-card:hover .p-img{transform:scale(1.1)}
-.p-img.err{display:none}
-.p-grad{position:absolute;bottom:0;left:0;right:0;height:70%;background:linear-gradient(transparent,rgba(1,1,8,.98));z-index:3;pointer-events:none}
-.p-shine{position:absolute;inset:0;background:linear-gradient(105deg,transparent 40%,rgba(255,255,255,.05) 50%,transparent 60%);z-index:4;transform:translateX(-110%);transition:transform .6s cubic-bezier(.25,.46,.45,.94);pointer-events:none}
-.hero-card:hover .p-shine{transform:translateX(110%)}
-.p-pip{position:absolute;top:8px;left:8px;padding:2px 8px;border-radius:5px;font-size:.48rem;font-weight:800;z-index:7;letter-spacing:1.5px;font-family:'Oxanium',sans-serif;backdrop-filter:blur(4px)}
-.p-name-overlay{position:absolute;bottom:0;left:0;right:0;padding:12px 10px 11px;z-index:7}
-.p-hero-name{font-size:.8rem;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-shadow:0 1px 12px #000c}
-.p-role-tag{font-size:.55rem;color:#f59e0b99;margin-top:2px;font-weight:600;letter-spacing:.5px}
-.hero-info{display:none}
+    .search:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(85,199,255,.12); }
 
-/* ── MODAL ── */
-.moverlay{position:fixed;inset:0;background:rgba(0,0,6,.9);z-index:1000;display:flex;align-items:center;justify-content:center;padding:16px;backdrop-filter:blur(20px)}
-.moverlay.hidden{display:none}
-.modal{background:linear-gradient(160deg,#08081a,#04040e);border-radius:24px;width:100%;max-width:760px;max-height:92vh;overflow-y:auto;position:relative;border:1px solid #ffffff08;box-shadow:0 50px 130px #000f,0 0 80px #7c3aed0e}
-.mclose{position:absolute;top:14px;right:14px;background:#0e0e20;border:1px solid #1c1c38;color:#444;border-radius:10px;width:34px;height:34px;cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center;z-index:100;transition:all .2s}
-.mclose:hover{background:#ef444420;color:#f87171;border-color:#ef444444}
-.mbanner{position:relative;height:230px;overflow:hidden;border-radius:24px 24px 0 0}
-.mb-emoji{position:absolute;right:24px;top:50%;transform:translateY(-50%);font-size:7rem;filter:drop-shadow(0 4px 24px #0008);z-index:1;opacity:.25}
-.mb-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:top center;z-index:2}
-.mb-img.err{display:none}
-.mb-grad{position:absolute;inset:0;z-index:3;pointer-events:none}
-.mb-info{position:absolute;bottom:0;left:0;padding:24px 26px;z-index:4}
-.mb-name{font-size:2.2rem;font-weight:800;font-family:'Oxanium',sans-serif;letter-spacing:2px;background:linear-gradient(90deg,#fff 30%,#fbbf24);-webkit-background-clip:text;-webkit-text-fill-color:transparent;text-shadow:none}
-.mb-roles{display:flex;gap:6px;margin-top:8px}
-.rbadge{display:inline-block;padding:4px 13px;border-radius:10px;font-size:.62rem;font-weight:700;letter-spacing:1.5px;font-family:'Oxanium',sans-serif}
-.mbody{padding:26px;position:relative;z-index:1}
-.stitle{font-size:.65rem;font-weight:800;letter-spacing:3px;text-transform:uppercase;margin:22px 0 14px;display:flex;align-items:center;gap:10px;font-family:'Oxanium',sans-serif;color:#d97706}
-.stitle::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,#f59e0b33,transparent)}
+    .hero-list {
+      height: calc(100vh - 168px);
+      min-height: 520px;
+      overflow: auto;
+      padding: 10px;
+      display: grid;
+      gap: 8px;
+      align-content: start;
+    }
 
-/* ── ITEM CARDS ── */
-.build-grid{display:flex;gap:10px;flex-wrap:wrap}
-.icard{width:88px;border-radius:12px;overflow:hidden;flex-shrink:0;background:#08081488;cursor:default;transition:all .25s;position:relative;border:1px solid #14142a;backdrop-filter:blur(8px)}
-.icard:hover{transform:translateY(-5px) scale(1.07);border-color:#f59e0b66;box-shadow:0 12px 32px #f59e0b22}
-.ip{width:88px;height:88px;position:relative;overflow:hidden;background:#08080e;display:flex;align-items:center;justify-content:center}
-.ip-emoji{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:2rem;z-index:1}
-.ip-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:2}
-.ip-img.err{display:none}
-.ilabel{padding:5px 4px 7px;text-align:center;background:#04040c88}
-.iname{font-size:.58rem;color:#ccd;line-height:1.2;font-weight:700}
-.itype{font-size:.5rem;color:#d97706;margin-top:2px;font-weight:700;letter-spacing:.5px}
+    .hero-row {
+      width: 100%;
+      border: 1px solid transparent;
+      border-radius: 8px;
+      background: #0c0f17;
+      color: var(--text);
+      padding: 9px;
+      display: grid;
+      grid-template-columns: 42px 1fr;
+      gap: 10px;
+      align-items: center;
+      text-align: left;
+    }
 
-/* ── MATCHUPS ── */
-.ccols{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.clist{background:#04040e88;border:1px solid #12122a;border-radius:14px;padding:16px;backdrop-filter:blur(8px)}
-.clist h4{font-size:.75rem;font-weight:800;margin-bottom:12px;font-family:'Oxanium',sans-serif;letter-spacing:1.5px}
-.ctag{display:inline-block;background:#0a0a1a88;border:1px solid #1e1e38;border-radius:8px;padding:4px 11px;font-size:.68rem;margin:3px;color:#aaa;transition:all .2s;backdrop-filter:blur(4px)}
-.ctag:hover{border-color:#f59e0b44;color:#f59e0b;background:#14140888}
-.cirow{display:flex;align-items:center;gap:12px;background:#04040e88;border:1px solid #12122a;border-radius:12px;padding:11px 14px;margin:7px 0;transition:all .2s;backdrop-filter:blur(8px)}
-.cirow:hover{border-color:#f59e0b33;background:#0c0c0a88;box-shadow:0 4px 18px #f59e0b0a}
-.cibox{width:48px;height:48px;border-radius:10px;overflow:hidden;flex-shrink:0;background:#08080e;position:relative;display:flex;align-items:center;justify-content:center;border:1px solid #1a1a30}
-.cibox-emoji{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:1.5rem;z-index:1}
-.cibox-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:2}
-.cibox-img.err{display:none}
-.ciname{font-weight:800;font-size:.84rem;color:#34d399;font-family:'Oxanium',sans-serif}
-.ciwhy{font-size:.68rem;color:#2a4a3a;margin-top:3px;line-height:1.4}
+    .hero-row:hover, .hero-row.active { border-color: var(--blue); background: #111928; }
+    .avatar {
+      width: 42px;
+      height: 42px;
+      display: grid;
+      place-items: center;
+      border-radius: 8px;
+      background: linear-gradient(145deg, #18364b, #222530);
+      font-size: 1.45rem;
+      border: 1px solid #2e3a51;
+      overflow: hidden;
+      position: relative;
+    }
 
-/* ── COUNTER BUILD GRID ── */
-.cb-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:6px}
-.cb-item{border-radius:14px;border:1px solid #14142a;background:#06060e88;overflow:hidden;transition:all .25s cubic-bezier(.175,.885,.32,1.275);backdrop-filter:blur(8px);cursor:default}
-.cb-item:hover{transform:translateY(-4px) scale(1.04);box-shadow:0 12px 30px #0008}
-.cb-img-wrap{position:relative;width:100%;aspect-ratio:1;background:#08080e;display:flex;align-items:center;justify-content:center;overflow:hidden}
-.cb-emoji{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:1.8rem;z-index:1}
-.cb-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:2}
-.cb-label{padding:7px 7px 8px;background:#04040c88}
-.cb-name{font-size:.58rem;font-weight:700;color:#ccd;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.cb-type{font-size:.5rem;font-weight:700;margin-top:2px;letter-spacing:.5px}
+    .name { font-weight: 800; line-height: 1.2; }
+    .roles { margin-top: 4px; display: flex; gap: 4px; flex-wrap: wrap; }
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      min-height: 20px;
+      border-radius: 999px;
+      padding: 2px 7px;
+      background: #1b2330;
+      color: #c5d0e4;
+      font-size: .7rem;
+      font-weight: 700;
+    }
 
-/* ── COUNTER TOOL ── */
-.twocol{display:grid;grid-template-columns:1fr 1fr;gap:22px}
-.panel{background:linear-gradient(160deg,#04040e99,#02020888);border:1px solid #10102000;border-radius:20px;padding:20px;margin-bottom:14px;box-shadow:0 8px 40px #0008,inset 0 1px 0 #ffffff06;backdrop-filter:blur(14px);position:relative}
-.panel::before{content:'';position:absolute;inset:0;border-radius:20px;border:1px solid #ffffff06;pointer-events:none}
-.panel h3{font-size:.9rem;font-weight:800;margin-bottom:14px;font-family:'Oxanium',sans-serif;letter-spacing:1.5px}
-.eslot{display:flex;align-items:center;gap:10px;background:#08081488;border:1px dashed #1c1c36;border-radius:12px;padding:10px 14px;margin-bottom:8px;transition:all .2s}
-.eslot.filled{border-style:solid;border-color:#ef444455;background:#140808aa;box-shadow:0 0 20px #ef44440a}
-.sthumb{width:36px;height:36px;border-radius:9px;overflow:hidden;flex-shrink:0;background:#08080e;position:relative;display:flex;align-items:center;justify-content:center;font-size:1.1rem;border:1px solid #1c1c34}
-.sthumb-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:top;z-index:2}
-.sthumb-img.err{display:none}
-.sthumb-e{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;z-index:1}
-.sname{flex:1;font-size:.84rem;font-weight:700;color:#bbc}
-.rbtn{background:none;border:none;color:#ef4444;cursor:pointer;font-size:.9rem;opacity:.4;transition:all .2s}
-.rbtn:hover{opacity:1}
-.minigrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(66px,1fr));gap:6px;max-height:340px;overflow-y:auto;padding:2px}
-.minicard{border-radius:10px;cursor:pointer;transition:all .22s;overflow:hidden;border:1px solid #10102a;background:linear-gradient(160deg,#0a0a18,#060610)}
-.minicard:hover:not(.dis){transform:scale(1.08);border-color:#ef444477;box-shadow:0 6px 18px #ef444428}
-.minicard.dis{opacity:.15;pointer-events:none}
-.mthumb{width:100%;aspect-ratio:1;position:relative;overflow:hidden;background:#08080e;display:flex;align-items:center;justify-content:center;font-size:1.3rem}
-.mthumb-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:top;z-index:2}
-.mthumb-img.err{display:none}
-.mthumb-e{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;z-index:1}
-.mname{padding:4px 3px;text-align:center;font-size:.56rem;color:#666;font-weight:700;background:#03030a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.crec{background:linear-gradient(135deg,#04100488,#02080288);border:1px solid #0e280e;border-radius:14px;padding:14px 16px;margin-bottom:10px;transition:all .2s;backdrop-filter:blur(8px)}
-.crec:hover{border-color:#22c55e33;box-shadow:0 6px 22px #22c55e0a}
-.crec-h{display:flex;align-items:center;gap:10px;margin-bottom:7px}
-.crecbox{width:42px;height:42px;border-radius:10px;overflow:hidden;flex-shrink:0;background:#08080e;position:relative;display:flex;align-items:center;justify-content:center;font-size:1.2rem;border:1px solid #142814}
-.crecbox-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:2}
-.crecbox-img.err{display:none}
-.crecname{font-weight:800;font-size:.88rem;color:#4ade80;flex:1;font-family:'Oxanium',sans-serif}
-.prio{font-size:.58rem;padding:3px 9px;border-radius:10px;font-weight:800;font-family:'Oxanium',sans-serif;letter-spacing:.5px}
-.ph{background:#ef444418;color:#f87171;border:1px solid #ef444440}
-.pm{background:#f9731618;color:#fb923c;border:1px solid #f9731640}
-.crecreason{font-size:.68rem;color:#1e4a2a;line-height:1.5}
-.empty{text-align:center;padding:48px 16px;color:#1c1c38;font-family:'Oxanium',sans-serif}
-.empty-icon{font-size:2.5rem;margin-bottom:10px;opacity:.25}
-.tip{margin-top:14px;padding:12px 16px;background:#06060e88;border:1px solid #14142a;border-left:2px solid #d97706;border-radius:12px;font-size:.7rem;color:#34344a;line-height:1.65;backdrop-filter:blur(8px)}
+    .main { display: grid; gap: 14px; min-width: 0; }
+    .hero-stage {
+      min-height: 206px;
+      padding: 18px;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(260px, 380px);
+      gap: 16px;
+      align-items: stretch;
+    }
 
-@media(max-width:768px){
-  .twocol,.ccols{grid-template-columns:1fr}
-  .hero-grid{grid-template-columns:repeat(auto-fill,minmax(96px,1fr))}
-  .content{padding:16px 16px}
-  header{padding:14px 18px}
-  .htitle{font-size:1.3rem}
-  .tabs{padding:10px 18px 0}
-}
-</style>
+    .selected-hero {
+      display: grid;
+      grid-template-columns: 92px 1fr;
+      gap: 14px;
+      align-items: center;
+    }
+
+    .big-avatar {
+      width: 92px;
+      aspect-ratio: 1;
+      border-radius: 8px;
+      display: grid;
+      place-items: center;
+      font-size: 3.2rem;
+      background: linear-gradient(145deg, #1a3a4f, #302c43);
+      border: 1px solid #3b506d;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .selected-hero h2 {
+      margin: 0;
+      font-size: clamp(1.7rem, 4vw, 3rem);
+      line-height: 1;
+    }
+
+    .subtitle { color: var(--muted); margin-top: 8px; line-height: 1.45; }
+
+    .build-tabs {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      align-content: start;
+    }
+
+    .build-tab {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #0c0f17;
+      color: var(--text);
+      padding: 12px;
+      text-align: left;
+      min-height: 84px;
+    }
+
+    .build-tab.active { border-color: var(--green); background: #102019; }
+    .build-tab b { display: block; margin-bottom: 4px; }
+    .build-tab span { color: var(--muted); font-size: .78rem; line-height: 1.25; display: block; }
+
+    .build-panel {
+      padding: 14px;
+      display: grid;
+      gap: 14px;
+    }
+
+    .items {
+      display: grid;
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .item {
+      min-height: 132px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #0d1018;
+      padding: 9px;
+      display: grid;
+      gap: 7px;
+      align-content: start;
+      position: relative;
+    }
+
+    .item.counter { border-color: rgba(255,107,107,.75); box-shadow: inset 0 0 0 1px rgba(255,107,107,.16); }
+    .item-art {
+      width: 54px;
+      aspect-ratio: 1;
+      border-radius: 8px;
+      background: linear-gradient(145deg, #192238, #0b0d14);
+      border: 1px solid #2e3a51;
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+      position: relative;
+      font-size: 1.75rem;
+      line-height: 1;
+    }
+    .item-name { font-weight: 800; font-size: .82rem; line-height: 1.15; }
+    .item-type { color: var(--muted); font-size: .72rem; line-height: 1.25; }
+    .badge {
+      position: absolute;
+      top: 7px;
+      right: 7px;
+      border-radius: 999px;
+      background: rgba(255,107,107,.18);
+      color: #ffd3d3;
+      padding: 2px 6px;
+      font-size: .62rem;
+      font-weight: 900;
+    }
+
+    .details-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    .subpanel {
+      background: var(--panel-2);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 13px;
+      min-width: 0;
+    }
+
+    .subpanel h3 {
+      margin: 0 0 10px;
+      font-size: .9rem;
+      color: #e8eefb;
+    }
+
+    .stat {
+      display: grid;
+      grid-template-columns: 104px 1fr 34px;
+      align-items: center;
+      gap: 8px;
+      margin: 8px 0;
+      font-size: .78rem;
+      color: #ccd5e5;
+    }
+
+    .bar {
+      height: 9px;
+      background: #0a0c12;
+      border-radius: 999px;
+      overflow: hidden;
+      border: 1px solid #252c3d;
+    }
+
+    .fill { height: 100%; width: var(--w); background: linear-gradient(90deg, var(--blue), var(--green)); }
+    .notes { display: grid; gap: 8px; color: #d5deed; font-size: .9rem; line-height: 1.45; }
+    .note { border-left: 3px solid var(--gold); padding-left: 10px; color: #dfe7f5; }
+
+    .enemy-tools { padding: 12px; display: grid; gap: 10px; }
+    .enemy-slots {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 7px;
+    }
+
+    .slot {
+      min-height: 80px;
+      border: 1px dashed #354058;
+      border-radius: 8px;
+      display: grid;
+      place-items: center;
+      text-align: center;
+      padding: 6px;
+      color: var(--muted);
+      background: #0c0f17;
+      position: relative;
+    }
+
+    .slot.filled { border-style: solid; color: var(--text); }
+    .slot button {
+      position: absolute;
+      top: 4px;
+      right: 4px;
+      width: 22px;
+      height: 22px;
+      border: 1px solid #46546f;
+      border-radius: 999px;
+      color: var(--text);
+      background: #0a0c12;
+      line-height: 1;
+    }
+
+    .enemy-list {
+      max-height: calc(100vh - 308px);
+      min-height: 390px;
+      overflow: auto;
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .enemy-pick {
+      min-height: 68px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #0c0f17;
+      color: var(--text);
+      display: grid;
+      grid-template-columns: 34px 1fr;
+      gap: 8px;
+      align-items: center;
+      padding: 7px;
+      text-align: left;
+    }
+
+    .enemy-pick:disabled { opacity: .35; cursor: not-allowed; }
+    .mini-avatar {
+      width: 34px;
+      aspect-ratio: 1;
+      border-radius: 7px;
+      display: grid;
+      place-items: center;
+      background: #192132;
+      font-size: 1.18rem;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .asset-img {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      z-index: 1;
+    }
+
+    .item-art .asset-img { object-fit: contain; padding: 4px; }
+    .fallback-emoji { position: relative; z-index: 0; line-height: 1; }
+    .asset-img.err { display: none; }
+
+    .coach-strip {
+      display: grid;
+      grid-template-columns: 150px repeat(3, 1fr);
+      gap: 8px;
+    }
+
+    .coach-card {
+      min-height: 86px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #0c0f17;
+      padding: 10px;
+      display: grid;
+      align-content: center;
+      gap: 4px;
+      min-width: 0;
+    }
+
+    .coach-kicker {
+      color: var(--muted);
+      font-size: .68rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+    }
+
+    .coach-value {
+      font-size: 1.05rem;
+      font-weight: 900;
+      color: #eef5ff;
+      line-height: 1.15;
+    }
+
+    .coach-small { color: var(--muted); font-size: .76rem; line-height: 1.28; }
+    .score-ring {
+      width: 70px;
+      aspect-ratio: 1;
+      border-radius: 999px;
+      display: grid;
+      place-items: center;
+      background: conic-gradient(var(--green) calc(var(--score) * 1%), #202638 0);
+      justify-self: center;
+      position: relative;
+      font-weight: 950;
+      color: #ffffff;
+    }
+
+    .score-ring::before {
+      content: "";
+      position: absolute;
+      inset: 8px;
+      border-radius: inherit;
+      background: #0c0f17;
+    }
+
+    .score-ring span { position: relative; z-index: 1; }
+    .plan-list, .threat-list { display: grid; gap: 8px; }
+    .plan-row, .threat-row {
+      border-left: 3px solid var(--blue);
+      padding-left: 10px;
+      color: #dfe7f5;
+      font-size: .88rem;
+      line-height: 1.42;
+    }
+
+    .threat-row.high { border-color: var(--red); }
+    .threat-row.med { border-color: var(--gold); }
+    .threat-row.low { border-color: var(--green); }
+    .rec-badge {
+      display: inline-flex;
+      width: fit-content;
+      margin-top: 6px;
+      border-radius: 999px;
+      background: rgba(110,231,168,.14);
+      color: #b8ffd6;
+      padding: 3px 7px;
+      font-size: .66rem;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+    }
+
+    .coach-action {
+      width: fit-content;
+      border: 1px solid rgba(110,231,168,.45);
+      border-radius: 999px;
+      background: rgba(110,231,168,.13);
+      color: #d8ffe8;
+      padding: 5px 10px;
+      font-size: .72rem;
+      font-weight: 900;
+      margin-top: 4px;
+    }
+
+    @media (max-width: 1150px) {
+      .app { grid-template-columns: 280px 1fr; }
+      .right { grid-column: 1 / -1; }
+      .enemy-list { max-height: 360px; grid-template-columns: repeat(4, minmax(0, 1fr)); }
+      .coach-strip { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    @media (max-width: 820px) {
+      .app { grid-template-columns: 1fr; padding: 10px; }
+      header { align-items: flex-start; flex-direction: column; }
+      .meta { text-align: left; }
+      .hero-list { height: 330px; min-height: 0; }
+      .hero-stage { grid-template-columns: 1fr; }
+      .build-tabs { grid-template-columns: 1fr; }
+      .items { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .details-grid { grid-template-columns: 1fr; }
+      .coach-strip { grid-template-columns: 1fr; }
+      .enemy-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .enemy-slots { grid-template-columns: repeat(5, minmax(58px, 1fr)); overflow-x: auto; }
+    }
+  </style>
 </head>
 <body>
-<canvas id="bg-canvas"></canvas>
-<div class="orb orb1"></div>
-<div class="orb orb2"></div>
-<div class="orb orb3"></div>
-<div class="orb orb4"></div>
-<header>
-  <div class="hlogo">⚔️</div>
-  <div>
-    <div class="htitle">MLBB Builds &amp; Counters</div>
-    <div class="hsub">Meta Builds · Hero Matchups · Counter Items</div>
-  </div>
-  <div class="hbadge">⚡ Season 2026</div><button class="install-btn" id="install-app-btn" hidden>Install App</button>
-</header>
-<div class="tabs">
-  <button class="tab active" onclick="switchTab('builds')">🗡️ Hero Builds</button>
-  <button class="tab" onclick="switchTab('counter')">🛡️ Counter Tool</button>
-  <button class="tab" onclick="switchTab('live')">⚡ Live Match</button>
-  <button class="tab" onclick="switchTab('scan')">📷 Scan</button>
-</div>
-<div class="content">
-  <div id="page-builds" class="page active">
-    <div class="filters">
-      <div class="search-wrap"><input class="search-box" id="hs" placeholder="Search hero..." oninput="renderH()"/></div>
-      <div id="rf" style="display:flex;gap:6px;flex-wrap:wrap"></div>
-      <span class="hcount" id="hc"></span>
-    </div>
-    <div class="hero-grid" id="hg"></div>
-  </div>
-  <div id="page-counter" class="page">
-    <div class="twocol">
+  <main class="app">
+    <header>
       <div>
-        <div class="panel" style="border-color:#3b82f633;box-shadow:0 0 30px #3b82f611">
-          <h3 style="color:#60a5fa">🔵 Your Hero <span style="font-size:.7rem;color:#444;font-weight:400">(the hero you're playing)</span></h3>
-          <div id="myhero-slot"></div>
-          <div id="myhero-picker">
-            <input class="search-box" id="mhs" placeholder="🔍 Search your hero..." oninput="renderMHG()" style="width:100%;margin-bottom:10px"/>
-            <div class="minigrid" id="mhg"></div>
+        <h1>MLBB Builds & Counters</h1>
+        <div class="subtitle">Pick your hero, choose a build style, then add enemy heroes to see counter swaps and stats.</div>
+      </div>
+      <div class="meta" id="summary">0 enemies selected</div>
+    </header>
+
+    <section class="panel">
+      <div class="panel-head">
+        <h2 class="panel-title">Your Hero</h2>
+      </div>
+      <div style="padding:10px 10px 0">
+        <input id="heroSearch" class="search" placeholder="Search hero..." autocomplete="off" />
+      </div>
+      <div class="hero-list" id="heroList"></div>
+    </section>
+
+    <section class="main">
+      <section class="panel hero-stage">
+        <div class="selected-hero">
+          <div class="big-avatar" id="bigAvatar">🏹</div>
+          <div>
+            <h2 id="heroName">Miya</h2>
+            <div class="roles" id="heroRoles"></div>
+            <div class="subtitle" id="heroDesc"></div>
           </div>
         </div>
-        <div class="panel">
-          <h3 style="color:#ff6666">🔴 Enemy Team <span style="font-size:.7rem;color:#333;font-weight:400">(pick up to 5)</span></h3>
-          <div id="eslots"></div>
+        <div class="build-tabs" id="buildTabs"></div>
+      </section>
+
+      <section class="panel build-panel">
+        <div class="panel-head" style="padding:0 0 12px; min-height:auto; border-bottom:0">
+          <h2 class="panel-title" id="buildTitle">Build</h2>
+          <span class="chip" id="buildFocus">Balanced</span>
         </div>
-        <div class="panel">
-          <h3 style="color:#999;font-size:.85rem">Pick Enemy Heroes</h3>
-          <input class="search-box" id="es" placeholder="🔍 Search..." oninput="renderMG()" style="width:100%;margin-bottom:10px"/>
-          <div class="minigrid" id="mg"></div>
+        <div class="coach-strip" id="coachStrip"></div>
+        <div class="items" id="items"></div>
+        <div class="details-grid">
+          <div class="subpanel">
+            <h3>Build Stats</h3>
+            <div id="stats"></div>
+          </div>
+          <div class="subpanel">
+            <h3>What It Helps</h3>
+            <div class="notes" id="notes"></div>
+          </div>
+          <div class="subpanel">
+            <h3>MVP Game Plan</h3>
+            <div class="plan-list" id="gamePlan"></div>
+          </div>
+          <div class="subpanel">
+            <h3>Enemy Threats</h3>
+            <div class="threat-list" id="threats"></div>
+          </div>
         </div>
+      </section>
+    </section>
+
+    <aside class="panel right">
+      <div class="panel-head">
+        <h2 class="panel-title">Enemy Team</h2>
+        <button class="chip" id="clearEnemies" type="button">Clear</button>
       </div>
-      <div class="panel"><h3 style="color:#4aff88">🟢 Recommended Counter Items</h3><div id="cr"></div></div>
-    </div>
-  </div>
-  <div id="page-live" class="page"><div class="live-shell" id="live-match"></div></div>
-  <div id="page-scan" class="page"><div class="scan-shell" id="scan-tool"></div></div>
-</div>
-<div class="moverlay hidden" id="mo" onclick="closeOut(event)">
-  <div class="modal" id="mb"><button class="mclose" onclick="closeM()">✕</button><div id="mc"></div></div>
-</div>
-
-<script>
-// ── IMAGE URLS ────────────────────────────────────────────────────
-const CDN = 'https://static.wikia.nocookie.net/mobile-legends/images/';
-const FP  = 'https://mobile-legends.fandom.com/wiki/Special:FilePath/';
-
-// Direct CDN hero portrait URLs (bypass Cloudflare on fandom.com)
-const HIMGS = {
-  "Tigreal":        CDN+"b/be/Tigreal.png/revision/latest",
-  "Franco":         CDN+"4/48/Franco.png/revision/latest",
-  "Minotaur":       CDN+"7/7e/Minotaur.png/revision/latest",
-  "Lolita":         CDN+"2/22/Lolita.png/revision/latest",
-  "Akai":           CDN+"c/c1/Akai.png/revision/latest",
-  "Johnson":        CDN+"5/56/Johnson.png/revision/latest",
-  "Grock":          CDN+"2/2b/Grock.png/revision/latest",
-  "Hylos":          CDN+"d/d6/Hylos.png/revision/latest",
-  "Uranus":         CDN+"e/ec/Uranus.png/revision/latest",
-  "Belerick":       CDN+"1/17/Belerick.png/revision/latest",
-  "Khufra":         CDN+"0/02/Khufra.png/revision/latest",
-  "Atlas":          CDN+"0/04/Atlas.png/revision/latest",
-  "Barats":         CDN+"5/50/Barats.png/revision/latest",
-  "Edith":          CDN+"0/09/Edith.png/revision/latest",
-  "Gloo":           CDN+"7/71/Gloo.png/revision/latest",
-  "Baxia":          CDN+"a/a5/Baxia.png/revision/latest",
-  "Carmilla":       CDN+"1/1d/Carmilla.png/revision/latest",
-  "Hilda":          CDN+"5/58/Hilda.png/revision/latest",
-  "Balmond":        CDN+"e/e1/Balmond.png/revision/latest",
-  "Freya":          CDN+"2/29/Freya.png/revision/latest",
-  "Chou":           CDN+"0/0f/Chou.png/revision/latest",
-  "Sun":            CDN+"6/61/Sun.png/revision/latest",
-  "Alpha":          CDN+"a/a8/Alpha.png/revision/latest",
-  "Ruby":           CDN+"a/a9/Ruby.png/revision/latest",
-  "Roger":          CDN+"c/c7/Roger.png/revision/latest",
-  "Jawhead":        CDN+"a/a7/Jawhead.png/revision/latest",
-  "Martis":         CDN+"5/57/Martis.png/revision/latest",
-  "Aldous":         CDN+"b/bc/Aldous.png/revision/latest",
-  "Leomord":        CDN+"5/59/Leomord.png/revision/latest",
-  "Thamuz":         CDN+"1/19/Thamuz.png/revision/latest",
-  "Badang":         CDN+"1/10/Badang.png/revision/latest",
-  "Guinevere":      CDN+"8/89/Guinevere.png/revision/latest",
-  "Dyrroth":        CDN+"b/ba/Dyrroth.png/revision/latest",
-  "Masha":          CDN+"f/f4/Masha.png/revision/latest",
-  "Silvanna":       CDN+"a/a9/Silvanna.png/revision/latest",
-  "Yu Zhong":       CDN+"1/1b/Yu_Zhong.png/revision/latest",
-  "Khaleed":        CDN+"9/91/Khaleed.png/revision/latest",
-  "Paquito":        CDN+"5/57/Paquito.png/revision/latest",
-  "Aulus":          CDN+"a/ae/Aulus.png/revision/latest",
-  "Phoveus":        CDN+"e/ea/Phoveus.png/revision/latest",
-  "Yin":            CDN+"f/f6/Yin.png/revision/latest",
-  "Julian":         CDN+"7/77/Julian.png/revision/latest",
-  "Esmeralda":      CDN+"d/d1/Esmeralda.png/revision/latest",
-  "Terizla":        CDN+"a/ac/Terizla.png/revision/latest",
-  "X.Borg":         CDN+"5/55/X.Borg.png/revision/latest",
-  "Zilong":         CDN+"6/66/Zilong.png/revision/latest",
-  "Lapu-Lapu":      CDN+"8/82/Lapu-Lapu.png/revision/latest",
-  "Argus":          CDN+"2/26/Argus.png/revision/latest",
-  "Bane":           CDN+"9/9a/Bane.png/revision/latest",
-  "Saber":          CDN+"2/23/Saber.png/revision/latest",
-  "Alucard":        CDN+"e/e7/Alucard.png/revision/latest",
-  "Fanny":          CDN+"5/54/Fanny.png/revision/latest",
-  "Natalia":        CDN+"8/82/Natalia.png/revision/latest",
-  "Yi Sun-shin":    CDN+"7/74/Yi_Sun-shin.png/revision/latest",
-  "Hayabusa":       CDN+"7/78/Hayabusa.png/revision/latest",
-  "Helcurt":        CDN+"f/f6/Helcurt.png/revision/latest",
-  "Lancelot":       CDN+"c/cd/Lancelot.png/revision/latest",
-  "Hanzo":          CDN+"f/ff/Hanzo.png/revision/latest",
-  "Selena":         CDN+"1/1b/Selena.png/revision/latest",
-  "Ling":           CDN+"6/6d/Ling.png/revision/latest",
-  "Benedetta":      CDN+"f/f9/Benedetta.png/revision/latest",
-  "Aamon":          CDN+"3/3b/Aamon.png/revision/latest",
-  "Nolan":          CDN+"1/19/Nolan.png/revision/latest",
-  "Karina":         CDN+"8/8b/Karina.png/revision/latest",
-  "Gusion":         CDN+"b/b2/Gusion.png/revision/latest",
-  "Nana":           CDN+"3/38/Nana.png/revision/latest",
-  "Cyclops":        CDN+"a/a9/Cyclops.png/revision/latest",
-  "Eudora":         CDN+"9/93/Eudora.png/revision/latest",
-  "Aurora":         CDN+"8/89/Aurora.png/revision/latest",
-  "Gord":           CDN+"3/34/Gord.png/revision/latest",
-  "Vexana":         CDN+"0/0a/Vexana.png/revision/latest",
-  "Odette":         CDN+"2/28/Odette.png/revision/latest",
-  "Zhask":          CDN+"f/f6/Zhask.png/revision/latest",
-  "Harith":         CDN+"6/60/Harith.png/revision/latest",
-  "Lunox":          CDN+"e/ed/Lunox.png/revision/latest",
-  "Lylia":          CDN+"6/61/Lylia.png/revision/latest",
-  "Harley":         CDN+"e/e4/Harley.png/revision/latest",
-  "Kadita":         CDN+"4/46/Kadita.png/revision/latest",
-  "Vale":           CDN+"6/63/Vale.png/revision/latest",
-  "Chang'e":        CDN+"8/87/Chang%27e.png/revision/latest",
-  "Cecilion":       CDN+"4/41/Cecilion.png/revision/latest",
-  "Kagura":         CDN+"a/af/Kagura.png/revision/latest",
-  "Yve":            CDN+"3/3d/Yve.png/revision/latest",
-  "Xavier":         CDN+"7/7d/Xavier.png/revision/latest",
-  "Valentina":      CDN+"9/90/Valentina.png/revision/latest",
-  "Pharsa":         CDN+"7/7b/Pharsa.png/revision/latest",
-  "Alice":          CDN+"8/82/Alice.png/revision/latest",
-  "Luo Yi":         CDN+"0/02/Luo_Yi.png/revision/latest",
-  "Layla":          CDN+"c/c8/Layla.png/revision/latest",
-  "Miya":           CDN+"3/37/Miya.png/revision/latest",
-  "Bruno":          CDN+"e/e7/Bruno.png/revision/latest",
-  "Clint":          CDN+"3/31/Clint.png/revision/latest",
-  "Moskov":         CDN+"8/82/Moskov.png/revision/latest",
-  "Irithel":        CDN+"6/6b/Irithel.png/revision/latest",
-  "Lesley":         CDN+"6/69/Lesley.png/revision/latest",
-  "Karrie":         CDN+"1/11/Karrie.png/revision/latest",
-  "Kimmy":          CDN+"6/65/Kimmy.png/revision/latest",
-  "Claude":         CDN+"0/0b/Claude.png/revision/latest",
-  "Granger":        CDN+"4/4d/Granger.png/revision/latest",
-  "Wanwan":         CDN+"5/5c/Wanwan.png/revision/latest",
-  "Popol and Kupa": CDN+"f/fb/Popol_and_Kupa.png/revision/latest",
-  "Beatrix":        CDN+"c/c2/Beatrix.png/revision/latest",
-  "Melissa":        CDN+"7/74/Melissa.png/revision/latest",
-  "Natan":          CDN+"2/22/Natan.png/revision/latest",
-  "Brody":          CDN+"4/4c/Brody.png/revision/latest",
-  "Rafaela":        CDN+"8/87/Rafaela.png/revision/latest",
-  "Estes":          CDN+"7/7c/Estes.png/revision/latest",
-  "Diggie":         CDN+"9/93/Diggie.png/revision/latest",
-  "Angela":         CDN+"f/fd/Angela.png/revision/latest",
-  "Kaja":           CDN+"1/16/Kaja.png/revision/latest",
-  "Floryn":         CDN+"7/71/Floryn.png/revision/latest",
-  "Mathilda":       CDN+"9/95/Mathilda.png/revision/latest",
-  "Faramis":        CDN+"7/72/Faramis.png/revision/latest",
-  "Valir":          CDN+"9/95/Valir.png/revision/latest",
-};
-
-function hSrc(wn) {
-  if (!HIMGS[wn]) return null;
-  const safe = wn.replace(/ /g,'_').replace(/'/g,'').replace(/\./g,'');
-  return 'mlbb-assets/heroes/' + safe + '.webp';
-}
-function hSrc2(wn) { return null; }
-
-// Item icon — local files first, emoji fallback if missing
-function iSrc(name) {
-  const safe = name.replace(/ /g,'_').replace(/'/g,'').replace(/\//g,'');
-  return 'mlbb-assets/items/' + safe + '.webp';
-}
-function iErr(el, name, step) { el.onerror = null; el.classList.add('err'); }
-// Hero image fallback — just hide if CDN url missing
-function hErr(el, wn) { el.onerror = null; el.classList.add('err'); }
-
-// ── ROLE STYLES ───────────────────────────────────────────────────
-const RS = {
-  Tank:     {grad:'linear-gradient(160deg,#0f3460,#07071a)',pip:'#4af0ff',pipbg:'#062030',badge:'#4af0ff',badgebg:'#062030',lbl:'TANK'},
-  Fighter:  {grad:'linear-gradient(160deg,#3d1500,#07071a)',pip:'#ff8844',pipbg:'#2a0e00',badge:'#ff8844',badgebg:'#2a0e00',lbl:'FGTR'},
-  Assassin: {grad:'linear-gradient(160deg,#1a002a,#07071a)',pip:'#cc44ff',pipbg:'#110020',badge:'#cc44ff',badgebg:'#110020',lbl:'ASGN'},
-  Mage:     {grad:'linear-gradient(160deg,#0a1f3d,#07071a)',pip:'#44aaff',pipbg:'#071828',badge:'#44aaff',badgebg:'#071828',lbl:'MAGE'},
-  Marksman: {grad:'linear-gradient(160deg,#1a2200,#07071a)',pip:'#aaff44',pipbg:'#111800',badge:'#aaff44',badgebg:'#111800',lbl:'MM'},
-  Support:  {grad:'linear-gradient(160deg,#1a1800,#07071a)',pip:'#ffee44',pipbg:'#141200',badge:'#ffee44',badgebg:'#141200',lbl:'SUPP'},
-};
-function rs(h){ return RS[h.roles[0]]||RS.Fighter; }
-
-// ── DEFAULT BUILDS ────────────────────────────────────────────────
-const DB = {
-  Tank:[
-    {n:'Tough Boots',e:'👟',t:'Boots'},{n:'Dominance Ice',e:'❄️',t:'Anti-Heal'},
-    {n:"Athena's Shield",e:'🔵',t:'Mag.Def'},{n:'Antique Cuirass',e:'🧲',t:'Phys.Def'},
-    {n:'Immortality',e:'💀',t:'Revive'},{n:'Oracle',e:'🔮',t:'Regen'},
-  ],
-  Fighter:[
-    {n:'Warrior Boots',e:'👢',t:'Boots'},{n:'Endless Battle',e:'🌊',t:'True DMG'},
-    {n:'Blade of Despair',e:'⚔️',t:'Burst'},{n:'Hunter Strike',e:'🎯',t:'CDR'},
-    {n:'Malefic Roar',e:'🌑',t:'Armor Pen'},{n:'Immortality',e:'💀',t:'Revive'},
-  ],
-  Assassin:[
-    {n:'Warrior Boots',e:'👢',t:'Boots'},{n:'Hunter Strike',e:'🎯',t:'CDR'},
-    {n:'Blade of the Heptaseas',e:'🔷',t:'Burst'},{n:'Blade of Despair',e:'⚔️',t:'Max Burst'},
-    {n:'Malefic Roar',e:'🌑',t:'Armor Pen'},{n:'Immortality',e:'💀',t:'Revive'},
-  ],
-  Mage:[
-    {n:'Arcane Boots',e:'🥿',t:'Boots'},{n:'Clock of Destiny',e:'⏰',t:'Scaling'},
-    {n:'Lightning Truncheon',e:'⚡',t:'Burst'},{n:'Holy Crystal',e:'🔮',t:'Max Magic'},
-    {n:'Divine Glaive',e:'💠',t:'Magic Pen'},{n:'Immortality',e:'💀',t:'Revive'},
-  ],
-  Marksman:[
-    {n:'Warrior Boots',e:'👢',t:'Boots'},{n:"Berserker's Fury",e:'🔥',t:'Crit DMG'},
-    {n:'Scarlet Phantom',e:'👻',t:'Crit Rate'},{n:'Malefic Roar',e:'🌑',t:'Armor Pen'},
-    {n:'Blade of Despair',e:'⚔️',t:'Burst'},{n:"Haas's Claws",e:'🦅',t:'Lifesteal'},
-  ],
-  Support:[
-    {n:'Tough Boots',e:'👟',t:'Boots'},{n:'Oracle',e:'🔮',t:'Regen'},
-    {n:'Fleeting Time',e:'⏱️',t:'CDR Ult'},{n:'Necklace of Durance',e:'📿',t:'Anti-Heal'},
-    {n:'Immortality',e:'💀',t:'Revive'},{n:"Athena's Shield",e:'🔵',t:'Mag.Def'},
-  ],
-};
-const DCI={
-  Tank:[{e:'🌑',n:'Malefic Roar',w:'Armor pen to shred tank defense'},{e:'❄️',n:'Dominance Ice',w:'Reduces their attack speed and crits'}],
-  Fighter:[{e:'❄️',n:'Dominance Ice',w:'Reduces their attack speed and crits'},{e:'🧲',n:'Antique Cuirass',w:'Reduces their burst physical damage'}],
-  Assassin:[{e:'🔵',n:"Athena's Shield",w:'Absorbs their burst combo window'},{e:'💀',n:'Immortality',w:'Second life after getting burst'}],
-  Mage:[{e:'🔵',n:"Athena's Shield",w:'Absorbs their burst damage window'},{e:'🌑',n:'Radiant Armor',w:'Reduces stacking magic damage'}],
-  Marksman:[{e:'❄️',n:'Dominance Ice',w:'Reduces their crit rate and attack speed'},{e:'🛡️',n:'Blade Armor',w:'Returns crit damage back to them'}],
-  Support:[{e:'⚡',n:'Necklace of Durance',w:'Reduces their healing by 50%'},{e:'🗡️',n:'Sea Halberd',w:'Reduces lifesteal and regen on hit'}],
-};
-
-// ── HERO DATA ─────────────────────────────────────────────────────
-// H(id, name, roles, icon, wikiName, build, strong, weak, ci)
-function H(id,nm,rl,ic,wn,bd,st,wk,ci){
-  return{id,name:nm,roles:rl,icon:ic,wn:wn||nm,
-    build:bd||DB[rl[0]],strong:st||[],weak:wk||[],ci:ci||DCI[rl[0]]};
-}
-
-// Item shorthand
-function i(n,e,t){return{n,e,t};}
-
-const heroes=[
-  // ══ TANKS ═══════════════════════════════════════════════════════
-  H('tigreal','Tigreal',['Tank'],'🛡️','Tigreal',
-    [i('Tough Boots','👟','Boots'),i('Dominance Ice','❄️','Anti-Heal'),i("Athena's Shield",'🔵','Mag.Def'),i('Antique Cuirass','🧲','Phys.Def'),i('Immortality','💀','Revive'),i('Oracle','🔮','Regen')],
-    ['Miya','Layla','Nana'],['Diggie','Chou','Franco'],
-    [{e:'⚡',n:'Necklace of Durance',w:'Reduces his HP regen from skills'},{e:'🗡️',n:'Sea Halberd',w:'Counters his sustain in teamfights'}]),
-  H('franco','Franco',['Tank'],'⚓','Franco',
-    [i('Tough Boots','👟','Boots'),i('Cursed Helmet','⛑️','Burn AOE'),i('Antique Cuirass','🧲','Phys.Def'),i('Dominance Ice','❄️','Anti-Heal'),i('Immortality','💀','Revive'),i("Athena's Shield",'🔵','Mag.Def')],
-    ['Layla','Miya','Kimmy'],['Diggie','Lolita','Nana'],
-    [{e:'🕊️',n:'Purify (Spell)',w:'Removes his hook and suppress instantly'},{e:'💨',n:'Wind of Nature',w:'Physical immune during his ult suppress'}]),
-  H('minotaur','Minotaur',['Tank'],'🐂','Minotaur',null,['Miya','Layla','Claude'],['Chou','Diggie','Lunox'],null),
-  H('lolita','Lolita',['Tank','Support'],'🔨','Lolita',
-    [i('Tough Boots','👟','Boots'),i('Dominance Ice','❄️','Anti-Heal'),i("Athena's Shield",'🔵','Mag.Def'),i('Oracle','🔮','Regen'),i('Immortality','💀','Revive'),i('Antique Cuirass','🧲','Phys.Def')],
-    ['Miya','Layla','Claude','Kimmy'],['Fanny','Ling','Gusion'],
-    [{e:'🥊',n:'Melee Attacks / Heroes',w:'Her Noumenon Energy Core shield only blocks projectiles'}]),
-  H('akai','Akai',['Tank'],'🐼','Akai',null,['Miya','Layla','Kimmy'],['Diggie','Chou','Lunox'],null),
-  H('johnson','Johnson',['Tank'],'🚗','Johnson',null,['Miya','Layla','Claude'],['Diggie','Chou','Franco'],null),
-  H('grock','Grock',['Tank'],'🪨','Grock',
-    [i('Tough Boots','👟','Boots'),i('Dominance Ice','❄️','Anti-Heal'),i("Athena's Shield",'🔵','Mag.Def'),i('Antique Cuirass','🧲','Phys.Def'),i('Cursed Helmet','⛑️','Burn AOE'),i('Immortality','💀','Revive')],
-    ['Layla','Nana','Cyclops'],['Diggie','Chou','Lunox'],
-    [{e:'🔥',n:'Flicker (Spell)',w:'Escape his Power of Nature wall traps'},{e:'🌊',n:'Endless Battle',w:'Out-sustain his wall composition'}]),
-  H('hylos','Hylos',['Tank'],'🐎','Hylos',null,['Miya','Layla','Claude'],['Karrie','Diggie','Esmeralda'],null),
-  H('uranus','Uranus',['Tank'],'⚛️','Uranus',
-    [i('Tough Boots','👟','Boots'),i('Oracle','🔮','Regen'),i('Cursed Helmet','⛑️','Burn AOE'),i('Dominance Ice','❄️','Anti-Heal'),i('Immortality','💀','Revive'),i("Athena's Shield",'🔵','Mag.Def')],
-    ['Miya','Layla','Claude'],['Karrie','Esmeralda','Lunox'],
-    [{e:'⚡',n:'Necklace of Durance',w:'Cuts his enormous passive HP regen'},{e:'🗡️',n:'Sea Halberd',w:'Further reduces his regen stacking'}]),
-  H('belerick','Belerick',['Tank'],'🌳','Belerick',null,['Miya','Layla','Claude'],['Diggie','Lunox','Chou'],null),
-  H('khufra','Khufra',['Tank'],'🧿','Khufra',
-    [i('Tough Boots','👟','Boots'),i('Antique Cuirass','🧲','Phys.Def'),i('Dominance Ice','❄️','Anti-Heal'),i('Immortality','💀','Revive'),i("Athena's Shield",'🔵','Mag.Def'),i('Oracle','🔮','Regen')],
-    ['Fanny','Ling','Lancelot','Zilong'],['Diggie','Nana','Lunox'],
-    [{e:'🕊️',n:'Purify (Spell)',w:"Removes his Tyrant's Revenge ball bounce"},{e:'⚡',n:'Sprint (Spell)',w:'Outrun his engage and slow'}]),
-  H('atlas','Atlas',['Tank'],'🌊','Atlas',
-    [i('Tough Boots','👟','Boots'),i('Cursed Helmet','⛑️','Burn AOE'),i('Dominance Ice','❄️','Anti-Heal'),i('Antique Cuirass','🧲','Phys.Def'),i('Immortality','💀','Revive'),i("Athena's Shield",'🔵','Mag.Def')],
-    ['Miya','Layla','Claude','Bruno'],['Diggie','Chou','Franco'],
-    [{e:'🕊️',n:'Purify (Spell)',w:'Removes his freeze chain before Fatal Links'},{e:'💨',n:'Wind of Nature',w:'Physical immune during his ult drag'}]),
-  H('barats','Barats',['Tank','Fighter'],'🦕','Barats',null,['Miya','Layla','Claude'],['Diggie','Chou','Karrie'],null),
-  H('edith','Edith',['Tank','Marksman'],'🤖','Edith',null,['Miya','Layla','Nana'],['Karrie','Chou','Franco'],null),
-  H('fredrinn','Fredrinn',['Tank','Fighter'],'💎','Fredrinn',
-    [i('Warrior Boots','👢','Boots'),i('Blade of the Heptaseas','🔷','Burst'),i('Endless Battle','🌊','True DMG'),i('Immortality','💀','Revive'),i('Antique Cuirass','🧲','Phys.Def'),i('Dominance Ice','❄️','Anti-Heal')],
-    ['Miya','Layla','Claude'],['Lunox','Esmeralda','Chou'],
-    [{e:'🕊️',n:'Purify (Spell)',w:'Removes his Brave Assault charge'},{e:'🧲',n:'Antique Cuirass',w:'Reduces his physical damage stacking'}]),
-  H('gloo','Gloo',['Tank'],'🟢','Gloo',
-    [i('Tough Boots','👟','Boots'),i('Cursed Helmet','⛑️','Burn AOE'),i("Athena's Shield",'🔵','Mag.Def'),i('Dominance Ice','❄️','Anti-Heal'),i('Immortality','💀','Revive'),i('Oracle','🔮','Regen')],
-    ['Miya','Layla','Claude'],['Chou','Diggie','Esmeralda'],
-    [{e:'❄️',n:'Dominance Ice',w:'Reduces his attach speed when he sticks to you'},{e:'🔵',n:"Athena's Shield",w:'Tanks his exploding goo ult damage'}]),
-  H('baxia','Baxia',['Tank'],'🐢','Baxia',
-    [i('Tough Boots','👟','Boots'),i('Cursed Helmet','⛑️','Burn AOE'),i('Dominance Ice','❄️','Anti-Heal'),i("Athena's Shield",'🔵','Mag.Def'),i('Immortality','💀','Revive'),i('Oracle','🔮','Regen')],
-    ['Yu Zhong','Esmeralda','Uranus','Estes'],['Diggie','Chou','Lunox'],
-    [{e:'⚡',n:'Necklace of Durance',w:"Reduces his Tortoise's Puissance regen"},{e:'🌑',n:'Malefic Roar',w:'Penetrate his stacked physical defense'}]),
-  H('carmilla','Carmilla',['Tank','Support'],'🧛‍♀️','Carmilla',null,['Miya','Layla','Claude'],['Diggie','Chou','Lunox'],null),
-  H('chip','Chip',['Tank','Support'],'🤖','Chip',null,['Miya','Layla','Claude'],['Diggie','Chou','Lunox'],null),
-  H('hilda','Hilda',['Fighter','Tank'],'🪓','Hilda',null,['Miya','Layla','Nana'],['Chou','Franco','Kaja'],null),
-
-  // ══ FIGHTERS ════════════════════════════════════════════════════
-  H('balmond','Balmond',['Fighter'],'🔴','Balmond',null,['Miya','Layla','Nana'],['Chou','Franco','Atlas'],null),
-  H('freya','Freya',['Fighter'],'⚡','Freya',null,['Miya','Layla','Nana'],['Chou','Franco','Khufra'],null),
-  H('chou','Chou',['Fighter','Assassin'],'🥋','Chou',
-    [i('Tough Boots','👟','Boots'),i('Blade of the Heptaseas','🔷','Burst'),i('Endless Battle','🌊','True DMG'),i('Malefic Roar','🌑','Armor Pen'),i('Hunter Strike','🎯','CDR'),i('Immortality','💀','Revive')],
-    ['Layla','Miya','Kimmy','Nana'],['Franco','Kaja','Diggie'],
-    [{e:'🕊️',n:'Purify (Spell)',w:'Removes his ult kick and chain CC'},{e:'🔮',n:"Athena's Shield",w:'Absorbs his burst combo window'}]),
-  H('sun','Sun',['Fighter'],'🐵','Sun',null,['Miya','Layla','Claude'],['Chou','Franco','Atlas'],null),
-  H('alpha','Alpha',['Fighter'],'🤖','Alpha',null,['Miya','Layla','Nana'],['Chou','Franco','Kaja'],null),
-  H('ruby','Ruby',['Fighter'],'♦️','Ruby',
-    [i('Warrior Boots','👢','Boots'),i('Bloodlust Axe','🪓','Spell Vamp'),i('Endless Battle','🌊','True DMG'),i('Oracle','🔮','Regen'),i('Immortality','💀','Revive'),i('Dominance Ice','❄️','Anti-Heal')],
-    ['Miya','Layla','Claude'],['Chou','Franco','Atlas'],
-    [{e:'⚡',n:'Necklace of Durance',w:"Cuts her massive lifesteal from I'm Offended!"},{e:'🗡️',n:'Sea Halberd',w:'Reduces her continuous life drain'}]),
-  H('roger','Roger',['Fighter','Marksman'],'🐺','Roger',null,['Miya','Layla','Nana'],['Chou','Franco','Atlas'],null),
-  H('jawhead','Jawhead',['Fighter'],'🤖','Jawhead',null,['Miya','Layla','Nana'],['Chou','Franco','Diggie'],null),
-  H('martis','Martis',['Fighter'],'⚔️','Martis',
-    [i('Warrior Boots','👢','Boots'),i('Endless Battle','🌊','True DMG'),i('Hunter Strike','🎯','CDR'),i('Blade of Despair','⚔️','Max Burst'),i('Malefic Roar','🌑','Armor Pen'),i('Immortality','💀','Revive')],
-    ['Miya','Layla','Nana'],['Chou','Franco','Atlas'],
-    [{e:'🕊️',n:'Purify (Spell)',w:'Removes his Armageddon ult chain'},{e:'🧲',n:'Antique Cuirass',w:'Reduces his stacking physical damage'}]),
-  H('aldous','Aldous',['Fighter'],'👊','Aldous',
-    [i('Tough Boots','👟','Boots'),i('Endless Battle','🌊','True DMG'),i('Blade of Despair','⚔️','Max Burst'),i('Hunter Strike','🎯','CDR'),i('Immortality','💀','Revive'),i('Malefic Roar','🌑','Armor Pen')],
-    ['Layla','Miya','Kimmy','Claude'],['Chou','Kaja','Diggie'],
-    [{e:'❄️',n:'Dominance Ice',w:'Reduces his attack speed and movement near him'},{e:'🧲',n:'Antique Cuirass',w:'Reduces his physical damage per Contract stack'}]),
-  H('leomord','Leomord',['Fighter'],'🐎','Leomord',
-    [i('Warrior Boots','👢','Boots'),i('Endless Battle','🌊','True DMG'),i('Blade of Despair','⚔️','Max Burst'),i('Malefic Roar','🌑','Armor Pen'),i('Hunter Strike','🎯','CDR'),i('Immortality','💀','Revive')],
-    ['Layla','Miya','Gusion','Pharsa'],['Chou','Franco','Atlas'],
-    [{e:'❄️',n:'Dominance Ice',w:'Reduces Phantom Steed movement speed'},{e:'🧲',n:'Antique Cuirass',w:'Reduces burst from his mounted form'}]),
-  H('thamuz','Thamuz',['Fighter'],'😈','Thamuz',
-    [i('Warrior Boots','👢','Boots'),i('Bloodlust Axe','🪓','Spell Vamp'),i('Endless Battle','🌊','True DMG'),i('Dominance Ice','❄️','Anti-Heal'),i('Immortality','💀','Revive'),i('Oracle','🔮','Regen')],
-    ['Miya','Layla','Claude'],['Chou','Franco','Atlas'],
-    [{e:'⚡',n:'Necklace of Durance',w:'Reduces his Lava Bass scythe regen'},{e:'❄️',n:'Dominance Ice',w:'Reduces his attack speed in ult form'}]),
-  H('badang','Badang',['Fighter'],'🌀','Badang',null,['Layla','Miya','Nana'],['Chou','Franco','Atlas'],null),
-  H('guinevere','Guinevere',['Fighter','Mage'],'👸','Guinevere',
-    [i('Arcane Boots','🥿','Boots'),i('Calamity Reaper','⚡','True DMG'),i('Feather of Heaven','🪶','Magic AS'),i('Holy Crystal','🔮','Max Magic'),i('Immortality','💀','Revive'),i('Divine Glaive','💠','Magic Pen')],
-    ['Layla','Miya','Nana','Rafaela'],['Chou','Franco','Atlas'],
-    [{e:'🔵',n:"Athena's Shield",w:'Absorbs her Super Magic Combo burst'},{e:'🕊️',n:'Purify (Spell)',w:'Removes her ult airborne knockup'}]),
-  H('dyrroth','Dyrroth',['Fighter'],'🔥','Dyrroth',null,['Miya','Layla','Nana'],['Chou','Franco','Atlas'],null),
-  H('masha','Masha',['Fighter'],'💪','Masha',null,['Miya','Layla','Claude'],['Chou','Franco','Kaja'],null),
-  H('baxia2','Baxia',['Tank'],'🐢','Baxia',null,['Yu Zhong','Esmeralda','Uranus'],['Chou','Diggie','Lunox'],null),
-  H('silvanna','Silvanna',['Fighter','Mage'],'🗡️','Silvanna',null,['Miya','Layla','Nana'],['Chou','Franco','Atlas'],null),
-  H('yuzhong','Yu Zhong',['Fighter'],'🐉','Yu Zhong',
-    [i('Warrior Boots','👢','Boots'),i('Bloodlust Axe','🪓','Spell Vamp'),i('Endless Battle','🌊','True DMG'),i('Oracle','🔮','Regen'),i('Immortality','💀','Revive'),i('Dominance Ice','❄️','Anti-Heal')],
-    ['Miya','Layla','Claude','Cyclops'],['Karrie','Baxia','Esmeralda'],
-    [{e:'⚡',n:'Necklace of Durance',w:'Counters his massive HP regen from Black Dragon Form'},{e:'🗡️',n:'Sea Halberd',w:'Reduces his lifesteal from Endless Battle and skills'}]),
-  H('khaleed','Khaleed',['Fighter'],'🏜️','Khaleed',null,['Miya','Layla','Nana'],['Chou','Franco','Atlas'],null),
-  H('paquito','Paquito',['Fighter','Assassin'],'🥊','Paquito',
-    [i('Warrior Boots','👢','Boots'),i('Hunter Strike','🎯','CDR'),i('Blade of the Heptaseas','🔷','Burst'),i('Blade of Despair','⚔️','Max Burst'),i('Malefic Roar','🌑','Armor Pen'),i('Immortality','💀','Revive')],
-    ['Layla','Miya','Gusion','Kagura'],['Chou','Franco','Kaja'],
-    [{e:'🔮',n:"Athena's Shield",w:'Absorbs his burst combo window'},{e:'🧲',n:'Antique Cuirass',w:'Reduces his physical damage stacking'}]),
-  H('aulus','Aulus',['Fighter'],'🪓','Aulus',null,['Miya','Layla','Claude'],['Chou','Franco','Atlas'],null),
-  H('phoveus','Phoveus',['Fighter'],'👹','Phoveus',null,['Fanny','Ling','Lancelot'],['Chou','Franco','Atlas'],
-    [{e:'🚫',n:'Avoid Dashes',w:'Phoveus gets empowered by every dash/blink — walk instead'},{e:'🌑',n:'Radiant Armor',w:'Reduces his scaling magic damage from Demonic Force'}]),
-  H('yin','Yin',['Fighter','Assassin'],'🐅','Yin',
-    [i('Warrior Boots','👢','Boots'),i('Hunter Strike','🎯','CDR'),i('Endless Battle','🌊','True DMG'),i('Blade of Despair','⚔️','Max Burst'),i('Malefic Roar','🌑','Armor Pen'),i('Immortality','💀','Revive')],
-    ['Miya','Layla','Nana'],['Chou','Franco','Atlas'],
-    [{e:'🕊️',n:'Purify (Spell)',w:"Removes his Sacred Realm ult dimension isolation"},{e:'🧲',n:'Antique Cuirass',w:'Reduces his stacking physical damage'}]),
-  H('julian','Julian',['Fighter','Mage'],'⚔️','Julian',null,['Miya','Layla','Nana'],['Chou','Franco','Atlas'],null),
-  H('arlott','Arlott',['Fighter','Assassin'],'🌀','Arlott',
-    [i('Warrior Boots','👢','Boots'),i('Hunter Strike','🎯','CDR'),i('Blade of Despair','⚔️','Max Burst'),i('Blade of the Heptaseas','🔷','Burst'),i('Malefic Roar','🌑','Armor Pen'),i('Immortality','💀','Revive')],
-    ['Layla','Miya','Nana'],['Chou','Franco','Khufra'],
-    [{e:'🔮',n:"Athena's Shield",w:'Absorbs his Mark of the Demon burst'},{e:'🧲',n:'Antique Cuirass',w:'Reduces his physical stacking hits'}]),
-  H('esmeralda','Esmeralda',['Fighter','Mage'],'💎','Esmeralda',
-    [i('Arcane Boots','🥿','Boots'),i('Calamity Reaper','⚡','True DMG'),i('Feather of Heaven','🪶','Magic AS'),i('Necklace of Durance','📿','Anti-Heal'),i('Immortality','💀','Revive'),i('Oracle','🔮','Regen')],
-    ['Tigreal','Hylos','Franco','Grock'],['Karrie','Baxia','Lunox'],
-    [{e:'⚡',n:'Necklace of Durance',w:'She converts shields to HP — cut the healing'},{e:'💠',n:'Divine Glaive',w:'Pierces her magic defense from shield skills'}]),
-  H('terizla','Terizla',['Fighter'],'⚒️','Terizla',null,['Miya','Layla','Claude'],['Chou','Franco','Fanny'],null),
-  H('xborg','X.Borg',['Fighter'],'🔧','X.Borg',null,['Miya','Layla','Nana'],['Chou','Franco','Atlas'],null),
-  H('zilong','Zilong',['Fighter','Assassin'],'🐉','Zilong',null,['Layla','Miya','Nana'],['Chou','Franco','Atlas'],null),
-  H('lapu','Lapu-Lapu',['Fighter'],'⚔️','Lapu-Lapu',
-    [i('Warrior Boots','👢','Boots'),i('Endless Battle','🌊','True DMG'),i('Hunter Strike','🎯','CDR'),i('Blade of Despair','⚔️','Max Burst'),i('Malefic Roar','🌑','Armor Pen'),i('Immortality','💀','Revive')],
-    ['Layla','Miya','Nana'],['Chou','Franco','Atlas'],
-    [{e:'❄️',n:'Dominance Ice',w:'Reduces his Great Chief Form attack speed'},{e:'🧲',n:'Antique Cuirass',w:'Reduces his heavy blade physical damage'}]),
-  H('argus','Argus',['Fighter'],'👼','Argus',null,['Layla','Miya','Nana'],['Chou','Franco','Atlas'],
-    [{e:'🕊️',n:'Purify (Spell)',w:'Use it after his ult ends to escape his pursuit'},{e:'❄️',n:'Dominance Ice',w:"Reduces his attack speed during his ult's lifestealing"}]),
-  H('bane','Bane',['Fighter','Mage'],'🦑','Bane',null,['Layla','Miya','Nana'],['Chou','Franco','Atlas'],null),
-  H('thamuz2','Thamuz',['Fighter'],'🔥','Thamuz',null,['Miya','Layla','Claude'],['Chou','Franco','Atlas'],null),
-
-  // ══ ASSASSINS ═══════════════════════════════════════════════════
-  H('saber','Saber',['Assassin'],'⚔️','Saber',null,['Layla','Miya','Nana'],['Khufra','Chou','Franco'],null),
-  H('alucard','Alucard',['Fighter','Assassin'],'🧛','Alucard',
-    [i('Warrior Boots','👢','Boots'),i('Bloodlust Axe','🪓','Spell Vamp'),i('Endless Battle','🌊','True DMG'),i('Blade of Despair','⚔️','Max Burst'),i('Malefic Roar','🌑','Armor Pen'),i('Immortality','💀','Revive')],
-    ['Layla','Miya','Nana'],['Chou','Franco','Atlas'],
-    [{e:'⚡',n:'Necklace of Durance',w:'Counters his Pursuit and Demon Embrace lifesteal'},{e:'🗡️',n:'Sea Halberd',w:'Reduces his lifesteal on every hit'}]),
-  H('fanny','Fanny',['Assassin'],'🦅','Fanny',
-    [i('Warrior Boots','👢','Boots'),i('Endless Battle','🌊','True DMG'),i('Blade of Despair','⚔️','Max Burst'),i('Hunter Strike','🎯','CDR'),i('Malefic Roar','🌑','Armor Pen'),i('Immortality','💀','Revive')],
-    ['Layla','Miya','Nana','Rafaela'],['Khufra','Atlas','Chou','Kaja'],
-    [{e:'❄️',n:'Dominance Ice',w:'Reduces her attack speed and Steel Cable damage'},{e:'🧲',n:'Antique Cuirass',w:'Reduces her physical damage per slash'}]),
-  H('natalia','Natalia',['Assassin'],'🗡️','Natalia',null,['Layla','Miya','Nana'],['Chou','Franco','Khufra'],null),
-  H('yss','Yi Sun-shin',['Assassin','Marksman'],'⛵','Yi Sun-shin',null,['Layla','Miya','Nana'],['Chou','Franco','Atlas'],null),
-  H('hayabusa','Hayabusa',['Assassin'],'🥷','Hayabusa',
-    [i('Warrior Boots','👢','Boots'),i('Hunter Strike','🎯','CDR'),i('Blade of Despair','⚔️','Max Burst'),i('Malefic Roar','🌑','Armor Pen'),i('Blade of the Heptaseas','🔷','Burst'),i('Immortality','💀','Revive')],
-    ['Layla','Miya','Nana','Rafaela'],['Chou','Franco','Khufra'],
-    [{e:'🧲',n:'Antique Cuirass',w:'Reduces his shadow slash physical damage per hit'},{e:'🕊️',n:'Purify (Spell)',w:'Escape his Ougi: Shadow Kill ult target lock'}]),
-  H('helcurt','Helcurt',['Assassin'],'🕷️','Helcurt',
-    [i('Warrior Boots','👢','Boots'),i('Blade of the Heptaseas','🔷','Burst'),i('Blade of Despair','⚔️','Max Burst'),i('Malefic Roar','🌑','Armor Pen'),i('Hunter Strike','🎯','CDR'),i('Immortality','💀','Revive')],
-    ['Miya','Layla','Kimmy','Pharsa'],['Diggie','Chou','Franco'],
-    [{e:'🕊️',n:'Purify (Spell)',w:'Removes his Deadly Stung silence'},{e:'💨',n:'Wind of Nature',w:'Physical immune during his Dark Night Falls ult'}]),
-  H('lancelot','Lancelot',['Assassin'],'⚔️','Lancelot',
-    [i('Warrior Boots','👢','Boots'),i('Hunter Strike','🎯','CDR'),i('Blade of the Heptaseas','🔷','Burst'),i('Blade of Despair','⚔️','Max Burst'),i('Malefic Roar','🌑','Armor Pen'),i('Immortality','💀','Revive')],
-    ['Miya','Layla','Nana','Alice'],['Khufra','Chou','Franco'],
-    [{e:'🔮',n:"Athena's Shield",w:'Blocks his burst during invincible ult window'},{e:'🧲',n:'Antique Cuirass',w:'Reduces his physical stacking damage'}]),
-  H('hanzo','Hanzo',['Assassin'],'🈲','Hanzo',null,['Layla','Miya','Nana'],['Diggie','Chou','Franco'],null),
-  H('selena','Selena',['Assassin','Mage'],'🏹','Selena',null,['Layla','Miya','Nana'],['Diggie','Chou','Franco'],null),
-  H('ling','Ling',['Assassin'],'🌸','Ling',
-    [i('Warrior Boots','👢','Boots'),i('Hunter Strike','🎯','CDR'),i('Blade of Despair','⚔️','Max Burst'),i('Malefic Roar','🌑','Armor Pen'),i('Endless Battle','🌊','True DMG'),i('Immortality','💀','Revive')],
-    ['Miya','Layla','Nana','Pharsa'],['Khufra','Chou','Atlas','Kaja'],
-    [{e:'❄️',n:'Dominance Ice',w:'Reduces his crit and attack speed'},{e:'💨',n:'Wind of Nature',w:'Dodge his burst during Tempest of Blades ult'}]),
-  H('benedetta','Benedetta',['Assassin'],'🌹','Benedetta',
-    [i('Warrior Boots','👢','Boots'),i('Hunter Strike','🎯','CDR'),i('Blade of Despair','⚔️','Max Burst'),i('Malefic Roar','🌑','Armor Pen'),i('Blade of the Heptaseas','🔷','Burst'),i('Immortality','💀','Revive')],
-    ['Layla','Miya','Nana'],['Chou','Franco','Khufra'],
-    [{e:'🔮',n:"Athena's Shield",w:'Absorbs her Alecto: Final Blow burst'},{e:'🧲',n:'Antique Cuirass',w:'Reduces her physical stacking damage'}]),
-  H('aamon','Aamon',['Assassin'],'👻','Aamon',
-    [i('Warrior Boots','👢','Boots'),i('Hunter Strike','🎯','CDR'),i('Blade of Despair','⚔️','Max Burst'),i('Malefic Roar','🌑','Armor Pen'),i('Blade of the Heptaseas','🔷','Burst'),i('Immortality','💀','Revive')],
-    ['Layla','Miya','Nana'],['Chou','Franco','Khufra'],
-    [{e:'🔵',n:"Athena's Shield",w:'Absorbs his Invisible Shards burst combo'},{e:'❄️',n:'Dominance Ice',w:'Reduces his attack speed while unseen'}]),
-  H('joy','Joy',['Assassin'],'🎵','Joy',
-    [i('Warrior Boots','👢','Boots'),i('Hunter Strike','🎯','CDR'),i('Blade of Despair','⚔️','Max Burst'),i('Malefic Roar','🌑','Armor Pen'),i('Calamity Reaper','⚡','True DMG'),i('Immortality','💀','Revive')],
-    ['Layla','Miya','Nana'],['Chou','Franco','Khufra'],
-    [{e:'🔵',n:"Athena's Shield",w:'Absorbs her rapid Solitude combo burst'},{e:'🕊️',n:'Purify (Spell)',w:'Removes her chain stun during combo'}]),
-  H('nolan','Nolan',['Assassin'],'🎯','Nolan',null,['Layla','Miya','Nana'],['Chou','Franco','Khufra'],null),
-  H('karina','Karina',['Assassin'],'🗡️','Karina',
-    [i('Arcane Boots','🥿','Boots'),i('Clock of Destiny','⏰','Scaling'),i('Holy Crystal','🔮','Max Magic'),i('Divine Glaive','💠','Magic Pen'),i('Lightning Truncheon','⚡','Burst'),i('Immortality','💀','Revive')],
-    ['Low-HP targets','Squishy carries'],['Chou','Franco','Khufra'],
-    [{e:'🔵',n:"Athena's Shield",w:"Absorbs her Ebon Blade double strike burst"},{e:'💀',n:'Immortality',w:"Second life prevents her execute passive from resetting"}]),
-
-  // ══ MAGES ════════════════════════════════════════════════════════
-  H('nana','Nana',['Mage','Support'],'🐱','Nana',null,['Miya','Layla','Claude'],['Helcurt','Gusion','Lancelot'],null),
-  H('cyclops','Cyclops',['Mage'],'👁️','Cyclops',
-    [i('Arcane Boots','🥿','Boots'),i('Clock of Destiny','⏰','Scaling'),i('Lightning Truncheon','⚡','Burst'),i('Holy Crystal','🔮','Max Magic'),i('Fleeting Time','⏱️','CDR Ult'),i('Divine Glaive','💠','Magic Pen')],
-    ['Layla','Miya','Claude'],['Helcurt','Lancelot','Gusion'],
-    [{e:'🔵',n:"Athena's Shield",w:'Absorbs his Star Power Lockdown orb burst'},{e:'🌑',n:'Radiant Armor',w:'Reduces his rapid magic proc Stardust hits'}]),
-  H('eudora','Eudora',['Mage'],'⚡','Eudora',null,['Layla','Miya','Nana'],['Helcurt','Gusion','Lancelot'],null),
-  H('aurora','Aurora',['Mage'],'❄️','Aurora',null,['Layla','Miya','Nana'],['Helcurt','Gusion','Lancelot'],null),
-  H('gord','Gord',['Mage'],'🔮','Gord',null,['Layla','Miya','Nana'],['Helcurt','Gusion','Lancelot'],null),
-  H('vexana','Vexana',['Mage'],'💀','Vexana',null,['Layla','Miya','Nana'],['Helcurt','Gusion','Lancelot'],null),
-  H('odette','Odette',['Mage'],'🦢','Odette',null,['Layla','Miya','Claude'],['Helcurt','Gusion','Lancelot'],null),
-  H('zhask','Zhask',['Mage'],'👾','Zhask',null,['Layla','Miya','Claude'],['Helcurt','Gusion','Lancelot'],null),
-  H('harith','Harith',['Mage'],'🐱','Harith',
-    [i('Arcane Boots','🥿','Boots'),i('Clock of Destiny','⏰','Scaling'),i('Lightning Truncheon','⚡','Burst'),i('Holy Crystal','🔮','Max Magic'),i('Divine Glaive','💠','Magic Pen'),i('Immortality','💀','Revive')],
-    ['Layla','Miya','Claude','Grock'],['Helcurt','Gusion','Chou'],
-    [{e:'❄️',n:'Dominance Ice',w:'Reduces his attack speed from Synchro Fission procs'},{e:'🔵',n:"Athena's Shield",w:'Absorbs his rapid magic burst combos'}]),
-  H('lunox','Lunox',['Mage'],'✨','Lunox',
-    [i('Arcane Boots','🥿','Boots'),i('Concentrated Energy','💡','Spell Vamp'),i('Holy Crystal','🔮','Max Magic'),i('Divine Glaive','💠','Magic Pen'),i('Necklace of Durance','📿','Anti-Heal'),i('Immortality','💀','Revive')],
-    ['Tigreal','Yu Zhong','Esmeralda','Uranus'],['Helcurt','Gusion','Lancelot'],
-    [{e:'🌑',n:'Radiant Armor',w:'Reduces her repeating Chaos Pulses'},{e:'🔵',n:"Athena's Shield",w:'Absorbs her burst Chaos damage window'}]),
-  H('lylia','Lylia',['Mage'],'🌙','Lylia',null,['Layla','Miya','Claude'],['Helcurt','Gusion','Lancelot'],null),
-  H('harley','Harley',['Mage','Assassin'],'🃏','Harley',null,['Layla','Miya','Nana'],['Helcurt','Gusion','Lancelot'],null),
-  H('kadita','Kadita',['Mage','Assassin'],'🌊','Kadita',null,['Layla','Miya','Nana'],['Helcurt','Gusion','Lancelot'],null),
-  H('vale','Vale',['Mage'],'💨','Vale',
-    [i('Arcane Boots','🥿','Boots'),i('Clock of Destiny','⏰','Scaling'),i('Lightning Truncheon','⚡','Burst'),i('Holy Crystal','🔮','Max Magic'),i('Divine Glaive','💠','Magic Pen'),i('Immortality','💀','Revive')],
-    ['Layla','Miya','Nana','Rafaela'],['Helcurt','Gusion','Lancelot'],
-    [{e:'🔵',n:"Athena's Shield",w:'Absorbs his Windblow combo burst'},{e:'🌑',n:'Radiant Armor',w:'Reduces his repeated Windstorm storm hits'}]),
-  H('change','Chang\'e',['Mage'],'🌕','Chang\'e',null,['Layla','Miya','Claude'],['Helcurt','Gusion','Lancelot'],null),
-  H('cecilion','Cecilion',['Mage'],'🧛','Cecilion',
-    [i('Arcane Boots','🥿','Boots'),i('Calamity Reaper','⚡','True DMG'),i('Holy Crystal','🔮','Max Magic'),i('Divine Glaive','💠','Magic Pen'),i('Blood Wings','🩸','HP Scaling'),i('Immortality','💀','Revive')],
-    ['Miya','Layla','Claude','Grock'],['Helcurt','Gusion','Ling'],
-    [{e:'⚡',n:'Necklace of Durance',w:'Counters his mana-scaling lifesteal regen'},{e:'🌑',n:'Radiant Armor',w:'Reduces his scaling magic damage over time'}]),
-  H('kagura','Kagura',['Mage'],'🌂','Kagura',
-    [i('Arcane Boots','🥿','Boots'),i('Clock of Destiny','⏰','Scaling'),i('Lightning Truncheon','⚡','Burst'),i('Holy Crystal','🔮','Max Magic'),i('Divine Glaive','💠','Magic Pen'),i('Immortality','💀','Revive')],
-    ['Miya','Layla','Claude','Grock'],['Chou','Helcurt','Gusion'],
-    [{e:'🔵',n:"Athena's Shield",w:'Absorbs her burst rotation damage'},{e:'🌑',n:'Radiant Armor',w:'Reduces her stacking Yin Yang Overturn hits'}]),
-  H('yve','Yve',['Mage'],'🌌','Yve',null,['Layla','Miya','Claude'],['Helcurt','Gusion','Lancelot'],null),
-  H('xavier','Xavier',['Mage'],'🔭','Xavier',null,['Layla','Miya','Claude'],['Helcurt','Gusion','Lancelot'],null),
-  H('valentina','Valentina',['Mage'],'🦋','Valentina',
-    [i('Arcane Boots','🥿','Boots'),i('Clock of Destiny','⏰','Scaling'),i('Lightning Truncheon','⚡','Burst'),i('Holy Crystal','🔮','Max Magic'),i('Divine Glaive','💠','Magic Pen'),i('Immortality','💀','Revive')],
-    ['Miya','Layla','Claude'],['Helcurt','Gusion','Lancelot'],
-    [{e:'🔵',n:"Athena's Shield",w:'Absorbs her I Am You ult stolen skill burst'},{e:'🌑',n:'Radiant Armor',w:'Reduces her stacking Primal Force hits'}]),
-  H('novaria','Novaria',['Mage'],'🫧','Novaria',null,['Layla','Miya','Claude'],['Helcurt','Gusion','Lancelot'],null),
-  H('pharsa','Pharsa',['Mage'],'🦜','Pharsa',
-    [i('Arcane Boots','🥿','Boots'),i('Clock of Destiny','⏰','Scaling'),i('Lightning Truncheon','⚡','Burst'),i('Holy Crystal','🔮','Max Magic'),i('Divine Glaive','💠','Magic Pen'),i('Blood Wings','🩸','HP Scaling')],
-    ['Layla','Miya','Grock','Tigreal'],['Helcurt','Gusion','Lancelot','Ling'],
-    [{e:'🔵',n:"Athena's Shield",w:'Blocks her Feathered Air Strike bomb burst'},{e:'🌑',n:'Radiant Armor',w:'Reduces magic damage from repeated ult bomb hits'}]),
-  H('alice','Alice',['Mage'],'🔮','Alice',null,['Layla','Miya','Nana'],['Helcurt','Gusion','Lancelot'],null),
-  H('luoyi','Luo Yi',['Mage','Support'],'☯️','Luo Yi',null,['Layla','Miya','Claude'],['Helcurt','Gusion','Lancelot'],null),
-  H('zhuxin','Zhuxin',['Mage','Support'],'🏮','Zhuxin',null,['Layla','Miya','Claude'],['Helcurt','Gusion','Lancelot'],null),
-  H('gusion','Gusion',['Assassin','Mage'],'🌟','Gusion',
-    [i('Arcane Boots','🥿','Boots'),i('Clock of Destiny','⏰','Scaling'),i('Lightning Truncheon','⚡','Burst'),i('Divine Glaive','💠','Magic Pen'),i('Holy Crystal','🔮','Max Magic'),i('Immortality','💀','Revive')],
-    ['Layla','Miya','Nana','Rafaela'],['Chou','Khufra','Franco'],
-    [{e:'🔵',n:"Athena's Shield",w:'Absorbs his burst window combo'},{e:'🌑',n:'Radiant Armor',w:'Reduces his repeating Shadowblade hits'}]),
-
-  // ══ MARKSMEN ═════════════════════════════════════════════════════
-  H('layla','Layla',['Marksman'],'🔫','Layla',
-    [i('Warrior Boots','👢','Boots'),i("Berserker's Fury",'🔥','Crit DMG'),i('Scarlet Phantom','👻','Crit Rate'),i('Malefic Roar','🌑','Armor Pen'),i('Blade of Despair','⚔️','Max Burst'),i("Haas's Claws",'🦅','Lifesteal')],
-    ['Tigreal','Grock','Hylos','Franco'],['Helcurt','Fanny','Gusion','Lancelot'],
-    [{e:'❄️',n:'Dominance Ice',w:'Reduces her attack speed mid-range'},{e:'🛡️',n:'Blade Armor',w:'Returns crit damage back to her'}]),
-  H('miya','Miya',['Marksman'],'🏹','Miya',
-    [i('Warrior Boots','👢','Boots'),i('Windtalker','💨','Attack Speed'),i("Berserker's Fury",'🔥','Crit DMG'),i('Scarlet Phantom','👻','Crit Rate'),i("Haas's Claws",'🦅','Lifesteal'),i('Malefic Roar','🌑','Armor Pen')],
-    ['Tigreal','Grock','Hylos'],['Helcurt','Fanny','Lancelot','Ling'],
-    [{e:'❄️',n:'Dominance Ice',w:'Reduces her critical attack speed'},{e:'🛡️',n:'Brute Force Breastplate',w:'Stack armor to tank her sustained DPS'}]),
-  H('bruno','Bruno',['Marksman'],'⚽','Bruno',null,['Tigreal','Grock','Hylos'],['Helcurt','Fanny','Lancelot'],null),
-  H('clint','Clint',['Marksman'],'🤠','Clint',null,['Tigreal','Grock','Hylos'],['Helcurt','Fanny','Lancelot'],null),
-  H('moskov','Moskov',['Marksman'],'🗡️','Moskov',null,['Tigreal','Grock','Hylos'],['Helcurt','Chou','Lancelot'],null),
-  H('irithel','Irithel',['Marksman'],'🐆','Irithel',null,['Tigreal','Grock','Hylos'],['Helcurt','Fanny','Lancelot'],null),
-  H('lesley','Lesley',['Marksman','Assassin'],'🔭','Lesley',null,['Tigreal','Grock','Hylos'],['Helcurt','Chou','Lancelot'],null),
-  H('karrie','Karrie',['Marksman'],'⭐','Karrie',
-    [i('Warrior Boots','👢','Boots'),i('Windtalker','💨','Attack Speed'),i("Berserker's Fury",'🔥','Crit DMG'),i('Scarlet Phantom','👻','Crit Rate'),i('Malefic Roar','🌑','Armor Pen'),i("Haas's Claws",'🦅','Lifesteal')],
-    ['Yu Zhong','Esmeralda','Uranus','Hylos'],['Helcurt','Chou','Franco','Fanny'],
-    [{e:'❄️',n:'Dominance Ice',w:'Reduces her attack speed and Lightwheel proc rate'},{e:'🛡️',n:'Brute Force Breastplate',w:'Stack armor against her true damage Lightwheels'}]),
-  H('kimmy','Kimmy',['Marksman','Mage'],'🧪','Kimmy',
-    [i('Arcane Boots','🥿','Boots'),i('Calamity Reaper','⚡','True DMG'),i('Feather of Heaven','🪶','Magic AS'),i('Holy Crystal','🔮','Max Magic'),i('Divine Glaive','💠','Magic Pen'),i('Immortality','💀','Revive')],
-    ['Tigreal','Grock','Hylos'],['Franco','Lolita','Chou'],
-    [{e:'🌑',n:'Radiant Armor',w:'Reduces her sustained magic bullet spray'},{e:'🔵',n:"Athena's Shield",w:'Absorbs her burst window Chemistry damage'}]),
-  H('claude','Claude',['Marksman'],'🐒','Claude',
-    [i('Warrior Boots','👢','Boots'),i("Haas's Claws",'🦅','Lifesteal'),i('Windtalker','💨','Attack Speed'),i("Berserker's Fury",'🔥','Crit DMG'),i('Scarlet Phantom','👻','Crit Rate'),i('Blade of Despair','⚔️','Max Burst')],
-    ['Tigreal','Grock','Hylos','Alice'],['Chou','Khufra','Franco','Fanny'],
-    [{e:'⚡',n:'Necklace of Durance',w:'Counters his Battle Mirror Image ult lifesteal'},{e:'❄️',n:'Dominance Ice',w:'Reduces his ult attack speed boost'}]),
-  H('granger','Granger',['Marksman','Assassin'],'🎻','Granger',null,['Tigreal','Grock','Hylos'],['Helcurt','Chou','Lancelot'],null),
-  H('wanwan','Wanwan',['Marksman'],'🎯','Wanwan',
-    [i('Warrior Boots','👢','Boots'),i('Windtalker','💨','Attack Speed'),i("Berserker's Fury",'🔥','Crit DMG'),i('Malefic Roar','🌑','Armor Pen'),i('Scarlet Phantom','👻','Crit Rate'),i('Immortality','💀','Revive')],
-    ['Tigreal','Grock','Hylos'],['Helcurt','Chou','Lancelot'],
-    [{e:'🔵',n:"Athena's Shield",w:'Absorbs her Crossbow of Tang ult burst'},{e:'❄️',n:'Dominance Ice',w:'Reduces her attack speed during Crossbow ult'}]),
-  H('popol','Popol and Kupa',['Marksman'],'🐺','Popol and Kupa',null,['Tigreal','Grock','Hylos'],['Helcurt','Chou','Lancelot'],null),
-  H('beatrix','Beatrix',['Marksman'],'🎖️','Beatrix',
-    [i('Warrior Boots','👢','Boots'),i("Berserker's Fury",'🔥','Crit DMG'),i('Malefic Roar','🌑','Armor Pen'),i('Blade of Despair','⚔️','Max Burst'),i('Scarlet Phantom','👻','Crit Rate'),i('Immortality','💀','Revive')],
-    ['Tigreal','Grock','Hylos','Alice'],['Helcurt','Chou','Franco'],
-    [{e:'🛡️',n:'Blade Armor',w:'Returns her high crit damage back to her'},{e:'❄️',n:'Dominance Ice',w:'Reduces her attack speed across all weapons'}]),
-  H('melissa','Melissa',['Marksman'],'🎀','Melissa',null,['Tigreal','Grock','Hylos'],['Helcurt','Chou','Franco'],null),
-  H('ixia','Ixia',['Marksman'],'🌺','Ixia',null,['Tigreal','Grock','Hylos'],['Helcurt','Chou','Lancelot'],null),
-  H('natan','Natan',['Marksman'],'🔬','Natan',null,['Tigreal','Grock','Hylos'],['Helcurt','Chou','Lancelot'],null),
-  H('brody','Brody',['Marksman'],'🔱','Brody',
-    [i('Warrior Boots','👢','Boots'),i('Blade of the Heptaseas','🔷','Burst'),i("Berserker's Fury",'🔥','Crit DMG'),i('Malefic Roar','🌑','Armor Pen'),i('Blade of Despair','⚔️','Max Burst'),i('Immortality','💀','Revive')],
-    ['Tigreal','Grock','Hylos','Khufra'],['Helcurt','Fanny','Lancelot','Ling'],
-    [{e:'❄️',n:'Dominance Ice',w:'Reduces his all-in damage and dive speed'},{e:'🧲',n:'Antique Cuirass',w:'Reduces his stacking burst per Abyss mark'}]),
-
-  // ══ SUPPORTS ════════════════════════════════════════════════════
-  H('rafaela','Rafaela',['Support'],'👼','Rafaela',
-    [i('Tough Boots','👟','Boots'),i('Oracle','🔮','Regen'),i('Fleeting Time','⏱️','CDR Ult'),i('Necklace of Durance','📿','Anti-Heal'),i('Immortality','💀','Revive'),i("Athena's Shield",'🔵','Mag.Def')],
-    ['Layla','Miya','Claude'],['Helcurt','Gusion','Lancelot'],
-    [{e:'⚡',n:'Necklace of Durance',w:'Counters her Holy Healing spells by 50%'},{e:'🗡️',n:'Sea Halberd',w:'Reduces her team healing passive on-hit'}]),
-  H('estes','Estes',['Support'],'🌿','Estes',
-    [i('Tough Boots','👟','Boots'),i('Oracle','🔮','Regen'),i('Fleeting Time','⏱️','CDR Ult'),i('Necklace of Durance','📿','Anti-Heal'),i('Immortality','💀','Revive'),i("Athena's Shield",'🔵','Mag.Def')],
-    ['Layla','Miya','Claude','Aldous'],['Helcurt','Gusion','Lancelot','Chou'],
-    [{e:'⚡',n:'Necklace of Durance',w:'#1 item against Estes — cuts healing 50%'},{e:'🗡️',n:'Sea Halberd',w:"Reduces his and his allies' lifesteal and regen on hit"}]),
-  H('diggie','Diggie',['Support'],'⏰','Diggie',
-    [i('Tough Boots','👟','Boots'),i('Oracle','🔮','Regen'),i('Necklace of Durance','📿','Anti-Heal'),i('Fleeting Time','⏱️','CDR Ult'),i('Immortality','💀','Revive'),i("Athena's Shield",'🔵','Mag.Def')],
-    ['Franco','Khufra','Atlas','Tigreal'],['Gusion','Helcurt','Lancelot'],
-    [{e:'🔵',n:"Athena's Shield",w:'Tank his Reverse Time egg bomb damage'},{e:'🌑',n:'Radiant Armor',w:'Reduces his magic bomb spam damage'}]),
-  H('angela','Angela',['Support'],'❤️','Angela',
-    [i('Tough Boots','👟','Boots'),i('Oracle','🔮','Regen'),i('Fleeting Time','⏱️','CDR Ult'),i('Necklace of Durance','📿','Anti-Heal'),i('Immortality','💀','Revive'),i("Athena's Shield",'🔵','Mag.Def')],
-    ['Layla','Miya','Claude','Aldous'],['Helcurt','Gusion','Chou'],
-    [{e:'⚡',n:'Necklace of Durance',w:'Counters her massive shield and Attached Soul heal'},{e:'🗡️',n:'Sea Halberd',w:"Reduces both her healing and the ally she's attached to"}]),
-  H('kaja','Kaja',['Support','Fighter'],'⚡','Kaja',
-    [i('Tough Boots','👟','Boots'),i('Oracle','🔮','Regen'),i('Fleeting Time','⏱️','CDR Ult'),i('Necklace of Durance','📿','Anti-Heal'),i('Immortality','💀','Revive'),i('Dominance Ice','❄️','Anti-Heal')],
-    ['Aldous','Fanny','Lancelot','Ling'],['Diggie','Gusion','Lancelot'],
-    [{e:'🕊️',n:'Purify (Spell)',w:"Removes his Ring of Order ult kidnap suppress"},{e:'💨',n:'Wind of Nature',w:'Physical immune during his ult drag'}]),
-  H('floryn','Floryn',['Support'],'🌸','Floryn',null,['Layla','Miya','Claude'],['Helcurt','Gusion','Lancelot'],null),
-  H('mathilda','Mathilda',['Support','Assassin'],'🦋','Mathilda',null,['Layla','Miya','Claude'],['Helcurt','Gusion','Chou'],null),
-  H('faramis','Faramis',['Support'],'💀','Faramis',null,['Layla','Miya','Claude'],['Helcurt','Gusion','Lancelot'],null),
-];
-
-// Deduplicate by name
-const seen=new Set();
-const heroList=heroes.filter(h=>{ if(seen.has(h.name))return false; seen.add(h.name); return true; });
-
-// ── STATE ─────────────────────────────────────────────────────────
-let roleFilter='All',enemyTeam=[],myHero=null;
-
-// Items that are practical for each player role archetype
-const MY_ROLE_FIT={
-  Tank:    ['Dominance Ice','Antique Cuirass',"Athena's Shield",'Radiant Armor','Cursed Helmet','Immortality','Blade Armor'],
-  Fighter: ['Dominance Ice','Antique Cuirass','Wind of Nature','Immortality','Rose Gold Meteor','Malefic Roar','Blade Armor'],
-  Assassin:["Athena's Shield",'Immortality','Rose Gold Meteor','Wind of Nature','Malefic Roar','Divine Glaive'],
-  Mage:   ["Athena's Shield",'Radiant Armor','Immortality','Necklace of Durance','Divine Glaive'],
-  Marksman:['Blade Armor','Dominance Ice','Wind of Nature','Immortality','Malefic Roar','Necklace of Durance','Sea Halberd'],
-  Support: ["Athena's Shield",'Radiant Armor','Immortality','Necklace of Durance','Dominance Ice'],
-};
-const ROLES=['All','Tank','Fighter','Assassin','Mage','Marksman','Support'];
-
-// ── TAB ───────────────────────────────────────────────────────────
-function switchTab(t){
-  document.querySelectorAll('.tab').forEach((el,i)=>el.classList.toggle('active',['builds','counter'][i]===t));
-  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-  document.getElementById('page-'+t).classList.add('active');
-}
-
-// ── FILTERS ───────────────────────────────────────────────────────
-function renderRF(){
-  document.getElementById('rf').innerHTML=ROLES.map(r=>
-    `<button class="role-btn${r===roleFilter?' active':''}" onclick="setRole('${r}')">${r}</button>`
-  ).join('');
-}
-function setRole(r){roleFilter=r;renderRF();renderH();}
-
-// ── HERO GRID ─────────────────────────────────────────────────────
-function renderH(){
-  const q=document.getElementById('hs').value.toLowerCase();
-  const list=heroList.filter(h=>h.name.toLowerCase().includes(q)&&(roleFilter==='All'||h.roles.includes(roleFilter)));
-  document.getElementById('hc').textContent=`${list.length} heroes`;
-  document.getElementById('hg').innerHTML=list.map(h=>{
-    const s=rs(h);
-    return `<div class="hero-card" data-role="${h.roles[0]}" onclick="openM('${h.name.replace(/'/g,"\\'")}')">
-      <div class="portrait" style="background:${s.grad}">
-        <div class="p-emoji">${h.icon}</div>
-        ${hSrc(h.wn)?`<img class="p-img" src="${hSrc(h.wn)}" alt="${h.name}" loading="lazy" onerror="hErr(this,'${h.wn.replace(/'/g,"\\'")}')">`:''}
-        <div class="p-grad"></div>
-        <div class="p-pip" style="background:${s.pipbg};color:${s.pip}">${s.lbl}</div>
-        <div class="p-name-overlay">
-          <div class="p-hero-name">${h.name}</div>
-          <div class="p-role-tag">${h.roles.join(' · ')}</div>
-        </div>
+      <div class="enemy-tools">
+        <div class="enemy-slots" id="enemySlots"></div>
+        <input id="enemySearch" class="search" placeholder="Search enemy..." autocomplete="off" />
+        <div class="enemy-list" id="enemyList"></div>
       </div>
-    </div>`;
-  }).join('');
-}
+    </aside>
+  </main>
 
-// ── MODAL ─────────────────────────────────────────────────────────
-function openM(name){
-  const h=heroList.find(x=>x.name===name);
-  if(!h)return;
-  const s=rs(h);
-  const buildHtml=h.build.map(item=>`
-    <div class="icard" title="${item.n}">
-      <div class="ip">
-        <div class="ip-emoji">${item.e}</div>
-        <img class="ip-img" src="${iSrc(item.n)}" alt="${item.n}" loading="lazy" onerror="iErr(this,'${item.n}',0)">
-      </div>
-      <div class="ilabel">
-        <div class="iname">${item.n}</div>
-        <div class="itype">${item.t}</div>
-      </div>
-    </div>`).join('');
-  const ciHtml=h.ci.map(ci=>`
-    <div class="cirow">
-      <div class="cibox">
-        <div class="cibox-emoji">${ci.e}</div>
-        <img class="cibox-img" src="${iSrc(ci.n)}" alt="${ci.n}" loading="lazy" onerror="iErr(this,'${ci.n}',0)">
-      </div>
-      <div><div class="ciname">${ci.n}</div><div class="ciwhy">${ci.w}</div></div>
-    </div>`).join('');
-  document.getElementById('mc').innerHTML=`
-    <div class="mbanner" style="background:${s.grad}">
-      <div class="mb-emoji">${h.icon}</div>
-      ${hSrc(h.wn)?`<img class="mb-img" src="${hSrc(h.wn)}" alt="${h.name}" loading="lazy" onerror="hErr(this,'${h.wn.replace(/'/g,"\\'")}')">`:''}
-      <div class="mb-grad" style="background:linear-gradient(90deg,${s.pipbg}f0 30%,transparent 70%),linear-gradient(0deg,rgba(0,0,15,.8),transparent)"></div>
-      <div class="mb-info">
-        <div class="mb-name">${h.name}</div>
-        <div class="mb-roles">${h.roles.map(r=>`<span class="rbadge" style="background:${RS[r]?.pipbg||'#222'};color:${RS[r]?.pip||'#aaa'};border:1px solid ${RS[r]?.pip||'#444'}44">${r}</span>`).join('')}</div>
-      </div>
-    </div>
-    <div class="mbody">
-      <div class="stitle" style="color:#a855f7">⚔️ Best Build — Current Meta</div>
-      <div class="build-grid">${buildHtml}</div>
-      <div class="stitle" style="color:#4aff88;margin-top:18px">🏆 Matchups</div>
-      <div class="ccols">
-        <div class="clist"><h4 style="color:#4aff88">✅ Strong Against</h4>${h.strong.map(x=>`<span class="ctag">✔ ${x}</span>`).join('')||'<span style="color:#333">— general pick</span>'}</div>
-        <div class="clist"><h4 style="color:#ff4a4a">❌ Weak Against</h4>${h.weak.map(x=>`<span class="ctag">✘ ${x}</span>`).join('')||'<span style="color:#333">— general pick</span>'}</div>
-      </div>
-      <div class="stitle" style="color:#ff8844;margin-top:18px">🛡️ How to Counter ${h.name}</div>
-      ${ciHtml}
-    </div>`;
-  document.getElementById('mo').classList.remove('hidden');
-  document.body.style.overflow='hidden';
-}
-function closeM(){document.getElementById('mo').classList.add('hidden');document.body.style.overflow='';}
-function closeOut(e){if(e.target===document.getElementById('mo'))closeM();}
-document.addEventListener('keydown',e=>{if(e.key==='Escape')closeM();});
+  <script>
+    const HEROES = [
+      ['Tigreal','Tank','🛡️'],['Franco','Tank','⚓'],['Minotaur','Tank','🐂'],['Lolita','Tank,Support','🔨'],
+      ['Akai','Tank','🐼'],['Johnson','Tank','🚗'],['Grock','Tank','🪨'],['Hylos','Tank','🐎'],['Uranus','Tank','🪐'],
+      ['Belerick','Tank','🌳'],['Khufra','Tank','🟣'],['Atlas','Tank','⚙️'],['Barats','Tank,Fighter','🦖'],
+      ['Edith','Tank,Marksman','⚡'],['Fredrinn','Tank,Fighter','🗡️'],['Gloo','Tank','🟢'],['Baxia','Tank','🛞'],
+      ['Carmilla','Tank,Support','🩸'],['Chip','Tank,Support','🌀'],['Hilda','Fighter,Tank','🪓'],['Balmond','Fighter','🪓'],
+      ['Freya','Fighter','🪽'],['Chou','Fighter,Assassin','🥋'],['Sun','Fighter','🐒'],['Alpha','Fighter','🤖'],
+      ['Ruby','Fighter','🌙'],['Roger','Fighter,Marksman','🐺'],['Jawhead','Fighter','🚀'],['Martis','Fighter','⚔️'],
+      ['Aldous','Fighter','👊'],['Leomord','Fighter','🐴'],['Thamuz','Fighter','🔥'],['Badang','Fighter','💥'],
+      ['Guinevere','Fighter,Mage','🌹'],['Dyrroth','Fighter','😈'],['Masha','Fighter','🐻'],['Silvanna','Fighter,Mage','🔱'],
+      ['Yu Zhong','Fighter','🐉'],['Khaleed','Fighter','🏜️'],['Paquito','Fighter,Assassin','🥊'],['Aulus','Fighter','🪓'],
+      ['Phoveus','Fighter','👁️'],['Yin','Fighter,Assassin','⛓️'],['Julian','Fighter,Mage','🃏'],['Arlott','Fighter,Assassin','🧿'],
+      ['Esmeralda','Fighter,Mage','💫'],['Terizla','Fighter','🔨'],['X.Borg','Fighter','🔥'],['Zilong','Fighter,Assassin','🐲'],
+      ['Lapu-Lapu','Fighter','🛡️'],['Argus','Fighter','🪽'],['Bane','Fighter,Mage','☠️'],['Saber','Assassin','🗡️'],
+      ['Alucard','Fighter,Assassin','🦇'],['Fanny','Assassin','🪝'],['Natalia','Assassin','🐾'],['Yi Sun-shin','Assassin,Marksman','🏹'],
+      ['Hayabusa','Assassin','🥷'],['Helcurt','Assassin','🌑'],['Lancelot','Assassin','🌹'],['Hanzo','Assassin','👹'],
+      ['Selena','Assassin,Mage','🌙'],['Ling','Assassin','🪶'],['Benedetta','Assassin','🗡️'],['Aamon','Assassin','🪞'],
+      ['Joy','Assassin','🎵'],['Nolan','Assassin','✂️'],['Karina','Assassin','💜'],['Nana','Mage,Support','🐱'],
+      ['Cyclops','Mage','👁️'],['Eudora','Mage','⚡'],['Aurora','Mage','❄️'],['Gord','Mage','🔵'],['Vexana','Mage','👑'],
+      ['Odette','Mage','🦢'],['Zhask','Mage','👾'],['Harith','Mage','⏳'],['Lunox','Mage','🌗'],['Lylia','Mage','💣'],
+      ['Harley','Mage,Assassin','🎩'],['Kadita','Mage,Assassin','🌊'],['Vale','Mage','🌪️'],['Cecilion','Mage','🦇'],
+      ['Kagura','Mage','☂️'],['Yve','Mage','🌌'],['Xavier','Mage','✨'],['Valentina','Mage','🎭'],['Novaria','Mage','🌠'],
+      ['Pharsa','Mage','🦅'],['Alice','Mage','🩸'],['Luo Yi','Mage,Support','☯️'],['Zhuxin','Mage,Support','🦋'],
+      ['Gusion','Assassin,Mage','🗡️'],['Layla','Marksman','🔫'],['Miya','Marksman','🏹'],['Bruno','Marksman','⚽'],
+      ['Clint','Marksman','🤠'],['Moskov','Marksman','🔱'],['Irithel','Marksman','🐆'],['Lesley','Marksman,Assassin','🎯'],
+      ['Karrie','Marksman','🌀'],['Kimmy','Marksman,Mage','🧪'],['Claude','Marksman','🐵'],['Granger','Marksman,Assassin','🎻'],
+      ['Wanwan','Marksman','🪡'],['Popol and Kupa','Marksman','🐺'],['Beatrix','Marksman','🔫'],['Melissa','Marksman','🧸'],
+      ['Ixia','Marksman','☄️'],['Natan','Marksman','🌀'],['Brody','Marksman','⚡'],['Rafaela','Support','🪽'],
+      ['Estes','Support','🌿'],['Diggie','Support','⏰'],['Angela','Support','💗'],['Kaja','Support,Fighter','⚡'],
+      ['Floryn','Support','🌸'],['Mathilda','Support,Assassin','🪶'],['Faramis','Support','💀']
+    ].map(([name, roles, icon]) => ({ name, roles: roles.split(','), icon }));
 
-// ── YOUR HERO ─────────────────────────────────────────────────────
-function setMyHero(name){
-  myHero=heroList.find(h=>h.name===name)||null;
-  renderMyHeroSlot();
-  renderMHG();
-  renderCR();
-}
-function clearMyHero(){myHero=null;renderMyHeroSlot();renderMHG();renderCR();}
+    const ITEM_STATS = {
+      'Tough Boots': { magicDefense: 14, armor: 4, utility: 12 }, 'Warrior Boots': { armor: 18, sustain: 4 },
+      'Arcane Boots': { magicDamage: 8, penetration: 10 }, 'Swift Boots': { attackSpeed: 16 },
+      'Rapid Boots': { utility: 18 }, 'Magic Shoes': { utility: 15 },
+      'Dominance Ice': { armor: 35, sustain: 8, utility: 14 }, "Athena's Shield": { magicDefense: 48, sustain: 16 },
+      'Radiant Armor': { magicDefense: 54, sustain: 18 }, 'Antique Cuirass': { armor: 45, sustain: 10 },
+      'Blade Armor': { armor: 58 }, 'Immortality': { armor: 24, sustain: 28, utility: 10 }, 'Oracle': { magicDefense: 22, sustain: 35 },
+      'Cursed Helmet': { magicDefense: 18, sustain: 14, magicDamage: 8 }, 'Guardian Helmet': { sustain: 48 },
+      'Endless Battle': { physicalDamage: 22, sustain: 12, utility: 10 }, 'War Axe': { physicalDamage: 24, sustain: 12, penetration: 8 },
+      'Blade of Despair': { physicalDamage: 55 }, 'Hunter Strike': { physicalDamage: 24, penetration: 12, utility: 12 },
+      'Malefic Roar': { physicalDamage: 18, penetration: 42 }, 'Queen’s Wings': { armor: 12, sustain: 32 },
+      'Bloodlust Axe': { physicalDamage: 20, sustain: 24 }, 'Sea Halberd': { physicalDamage: 22, attackSpeed: 12, utility: 16 },
+      'Blade of the Heptaseas': { physicalDamage: 28, penetration: 18 }, 'Berserker’s Fury': { physicalDamage: 34 },
+      'Haas’s Claws': { physicalDamage: 18, attackSpeed: 16, sustain: 22 }, 'Demon Hunter Sword': { physicalDamage: 18, attackSpeed: 30, sustain: 10 },
+      'Golden Staff': { attackSpeed: 38 }, 'Windtalker': { attackSpeed: 35, utility: 8 }, 'Wind of Nature': { physicalDamage: 12, attackSpeed: 14, armor: 28, utility: 24 },
+      'Rose Gold Meteor': { physicalDamage: 20, magicDefense: 24, sustain: 18 }, 'Corrosion Scythe': { physicalDamage: 14, attackSpeed: 32, utility: 12 },
+      'Clock of Destiny': { magicDamage: 26, sustain: 20 }, 'Lightning Truncheon': { magicDamage: 30, utility: 8 },
+      'Holy Crystal': { magicDamage: 52 }, 'Divine Glaive': { magicDamage: 20, penetration: 45 },
+      'Genius Wand': { magicDamage: 24, penetration: 22 }, 'Glowing Wand': { magicDamage: 24, sustain: 8, utility: 12 },
+      'Winter Crown': { armor: 18, magicDefense: 18, utility: 30 }, 'Blood Wings': { magicDamage: 42, sustain: 18 },
+      'Necklace of Durance': { magicDamage: 20, sustain: 8, utility: 18 }, 'Enchanted Talisman': { magicDamage: 18, utility: 24 },
+      'Fleeting Time': { magicDamage: 16, utility: 28 }, 'Flask of the Oasis': { magicDefense: 14, sustain: 34, utility: 24 },
+      'Favor Roam': { sustain: 28, utility: 24 }, 'Conceal Roam': { utility: 42 }, 'Thunder Belt': { armor: 22, magicDefense: 12, sustain: 16, utility: 18 }
+    };
 
-function renderMyHeroSlot(){
-  const slot=document.getElementById('myhero-slot');
-  const picker=document.getElementById('myhero-picker');
-  if(myHero){
-    const s=rs(myHero);
-    slot.innerHTML=`<div class="eslot filled" style="border-color:#3b82f666;background:#08101888;box-shadow:0 0 20px #3b82f611">
-      <div class="sthumb" style="background:${s.grad}">
-        <span class="sthumb-e">${myHero.icon}</span>
-        ${hSrc(myHero.wn)?`<img class="sthumb-img" src="${hSrc(myHero.wn)}" alt="${myHero.name}" loading="lazy" onerror="hErr(this,'${myHero.wn.replace(/'/g,"\\'")}')">`:''}
-      </div>
-      <span class="sname" style="color:#93c5fd">${myHero.name}</span>
-      <span style="font-size:.6rem;color:${s.pip}">${myHero.roles.join(' · ')}</span>
-      <button class="rbtn" style="color:#60a5fa" onclick="clearMyHero()">✕</button>
-    </div>`;
-    picker.style.display='none';
-  } else {
-    slot.innerHTML=`<div class="eslot" style="cursor:pointer;border-color:#3b82f633" onclick="document.getElementById('myhero-picker').style.display='block';document.getElementById('mhs').focus();renderMHG()">
-      <div class="sthumb" style="background:#0a1020;border-color:#3b82f633;font-size:1.2rem">+</div>
-      <span class="sname" style="color:#3b5a8a">Tap to pick your hero</span>
-    </div>`;
-    picker.style.display='block';
-    renderMHG();
-  }
-}
+    const ROLE_BUILDS = {
+      Tank: {
+        balanced: ['Tough Boots','Dominance Ice',"Athena's Shield",'Antique Cuirass','Immortality','Oracle'],
+        damage: ['Tough Boots','Cursed Helmet','Thunder Belt','Dominance Ice','Immortality','Guardian Helmet'],
+        armor: ['Warrior Boots','Dominance Ice','Antique Cuirass','Blade Armor','Immortality','Guardian Helmet']
+      },
+      Fighter: {
+        balanced: ['Warrior Boots','War Axe','Endless Battle','Queen’s Wings','Malefic Roar','Immortality'],
+        damage: ['Warrior Boots','Hunter Strike','Blade of Despair','Malefic Roar','Sea Halberd','Immortality'],
+        armor: ['Warrior Boots','War Axe','Dominance Ice','Queen’s Wings','Athena’s Shield','Immortality']
+      },
+      Assassin: {
+        balanced: ['Warrior Boots','Hunter Strike','Blade of the Heptaseas','Blade of Despair','Malefic Roar','Immortality'],
+        damage: ['Rapid Boots','Blade of the Heptaseas','Hunter Strike','Blade of Despair','Malefic Roar','Sea Halberd'],
+        armor: ['Tough Boots','Hunter Strike','Rose Gold Meteor','Queen’s Wings','Malefic Roar','Immortality']
+      },
+      Mage: {
+        balanced: ['Arcane Boots','Clock of Destiny','Lightning Truncheon','Holy Crystal','Divine Glaive','Winter Crown'],
+        damage: ['Arcane Boots','Genius Wand','Glowing Wand','Holy Crystal','Divine Glaive','Blood Wings'],
+        armor: ['Tough Boots','Enchanted Talisman','Glowing Wand','Winter Crown','Oracle','Immortality']
+      },
+      Marksman: {
+        balanced: ['Swift Boots','Demon Hunter Sword','Golden Staff','Windtalker','Malefic Roar','Wind of Nature'],
+        damage: ['Swift Boots','Berserker’s Fury','Haas’s Claws','Blade of Despair','Malefic Roar','Wind of Nature'],
+        armor: ['Tough Boots','Demon Hunter Sword','Rose Gold Meteor','Wind of Nature','Malefic Roar','Immortality']
+      },
+      Support: {
+        balanced: ['Magic Shoes','Flask of the Oasis','Favor Roam','Dominance Ice','Oracle','Immortality'],
+        damage: ['Arcane Boots','Enchanted Talisman','Fleeting Time','Necklace of Durance','Divine Glaive','Winter Crown'],
+        armor: ['Tough Boots','Conceal Roam','Dominance Ice',"Athena's Shield",'Oracle','Immortality']
+      }
+    };
 
-function renderMHG(){
-  const q=(document.getElementById('mhs').value||'').toLowerCase();
-  document.getElementById('mhg').innerHTML=heroList.filter(h=>h.name.toLowerCase().includes(q)).map(h=>{
-    const sel=myHero&&myHero.name===h.name;
-    const s=rs(h);
-    return`<div class="minicard${sel?' dis':''}" onclick="setMyHero('${h.name.replace(/'/g,"\\'")}')">
-      <div class="mthumb" style="background:${s.grad}">
-        <span class="mthumb-e">${h.icon}</span>
-        ${hSrc(h.wn)?`<img class="mthumb-img" src="${hSrc(h.wn)}" alt="${h.name}" loading="lazy" onerror="hErr(this,'${h.wn.replace(/'/g,"\\'")}')">`:''}
-      </div>
-      <div class="mname">${h.name}</div>
-    </div>`;
-  }).join('');
-}
+    const ITEM_META = {
+      'Tough Boots': ['👟','Crowd control and magic pressure'], 'Warrior Boots': ['👢','Physical lane pressure'],
+      'Arcane Boots': ['🥿','Early magic penetration'], 'Swift Boots': ['👟','Basic attack speed'],
+      'Rapid Boots': ['💨','Fast rotations'], 'Magic Shoes': ['🥿','Cooldown uptime'],
+      'Dominance Ice': ['❄️','Anti-heal and attack speed reduction'], "Athena's Shield": ['🔵','Burst magic shield'],
+      'Athena’s Shield': ['🔵','Burst magic shield'], 'Radiant Armor': ['🌞','Repeated magic damage'],
+      'Antique Cuirass': ['🧲','Reduces repeated physical skill damage'], 'Blade Armor': ['🛡️','Reflects marksman basic attacks'],
+      'Immortality': ['💀','Second life for late fights'], 'Oracle': ['🔮','Stronger shields and healing'],
+      'Cursed Helmet': ['⛑️','Extra area damage while tanking'], 'Guardian Helmet': ['💚','High HP and out-of-fight regen'],
+      'Endless Battle': ['🌊','True damage and sustain'], 'War Axe': ['🪓','Stacking fighter damage'],
+      'Blade of Despair': ['⚔️','Maximum finishing damage'], 'Hunter Strike': ['🎯','Penetration and chase speed'],
+      'Malefic Roar': ['🌑','Shreds armor'], 'Queen’s Wings': ['🪽','Survive burst while fighting'],
+      'Bloodlust Axe': ['🩸','Spell vamp sustain'], 'Sea Halberd': ['🗡️','Anti-heal damage item'],
+      'Blade of the Heptaseas': ['🔷','First-hit burst'], 'Berserker’s Fury': ['💥','Critical burst'],
+      'Haas’s Claws': ['🩸','Lifesteal'], 'Demon Hunter Sword': ['🗡️','Kills high-HP heroes'],
+      'Golden Staff': ['✨','Attack effect speed'], 'Windtalker': ['🌪️','Attack speed and wave clear'],
+      'Wind of Nature': ['💨','Physical immunity window'], 'Rose Gold Meteor': ['🌹','Magic shield for damage heroes'],
+      'Corrosion Scythe': ['🧊','Slows enemies with basic attacks'], 'Clock of Destiny': ['⏰','Scaling HP and magic power'],
+      'Lightning Truncheon': ['⚡','Burst combo damage'], 'Holy Crystal': ['🔮','Raw magic power'],
+      'Divine Glaive': ['💠','Magic penetration'], 'Genius Wand': ['🧠','Stacking magic defense reduction'],
+      'Glowing Wand': ['🔥','Burn damage and anti-heal'], 'Winter Crown': ['❄️','Stasis survival'],
+      'Blood Wings': ['🪽','Late-game magic power shield'], 'Necklace of Durance': ['📿','Anti-heal for magic/support'],
+      'Enchanted Talisman': ['📘','Mana and cooldown'], 'Fleeting Time': ['⏱️','Ultimate reset tempo'],
+      'Flask of the Oasis': ['🧪','Shield for healing supports'], 'Favor Roam': ['💚','Roam healing boost'],
+      'Conceal Roam': ['👻','Team engage or escape'], 'Thunder Belt': ['⚡','Defensive true damage slow']
+    };
 
-// ── COUNTER TOOL ──────────────────────────────────────────────────
-function addE(name){
-  if(enemyTeam.length>=5||enemyTeam.find(h=>h.name===name))return;
-  enemyTeam.push(heroList.find(h=>h.name===name));
-  refresh();
-}
-function removeE(name){
-  enemyTeam=enemyTeam.filter(h=>h.name!==name);
-  refresh();
-}
-function refresh(){renderSlots();renderMG();renderCR();}
+    const COUNTER_RULES = [
+      { roles:['Marksman'], item:'Blade Armor', reason:'enemy marksmen rely on basic attacks' },
+      { roles:['Marksman','Assassin'], item:'Wind of Nature', reason:'blocks physical burst during their all-in' },
+      { roles:['Mage'], item:"Athena's Shield", reason:'protects against magic burst combos' },
+      { roles:['Mage'], item:'Radiant Armor', reason:'handles repeated magic poke and burns' },
+      { roles:['Tank','Fighter'], item:'Malefic Roar', reason:'adds armor penetration into frontliners' },
+      { roles:['Support'], item:'Sea Halberd', reason:'cuts healing and shields from supports' },
+      { names:['Estes','Rafaela','Angela','Floryn','Ruby','Uranus','Esmeralda','Yu Zhong','Thamuz'], item:'Necklace of Durance', reason:'reduces heavy healing and sustain' },
+      { names:['Fanny','Ling','Lancelot','Hayabusa','Saber','Gusion','Nolan'], item:'Antique Cuirass', reason:'reduces repeated physical skill burst' },
+      { names:['Eudora','Aurora','Vale','Kadita','Pharsa','Xavier'], item:"Athena's Shield", reason:'prevents one-shot magic burst' },
+      { names:['Miya','Layla','Claude','Moskov','Karrie','Melissa','Ixia','Natan'], item:'Dominance Ice', reason:'slows attack speed and applies anti-heal aura' }
+    ];
 
-function renderSlots(){
-  document.getElementById('eslots').innerHTML=[0,1,2,3,4].map(i=>{
-    const h=enemyTeam[i];
-    if(!h)return`<div class="eslot"><div class="sthumb">❓</div><span class="sname" style="color:#2a2a4a">Slot ${i+1}</span></div>`;
-    const s=rs(h);
-    return`<div class="eslot filled">
-      <div class="sthumb" style="background:${s.grad}">
-        <span class="sthumb-e">${h.icon}</span>
-        ${hSrc(h.wn)?`<img class="sthumb-img" src="${hSrc(h.wn)}" alt="${h.name}" loading="lazy" onerror="hErr(this,'${h.wn.replace(/'/g,"\\'")}')">`:''}
-      </div>
-      <span class="sname">${h.name}</span>
-      <span style="font-size:.6rem;color:${s.pip}">${h.roles[0]}</span>
-      <button class="rbtn" onclick="removeE('${h.name.replace(/'/g,"\\'")}')">✕</button>
-    </div>`;
-  }).join('');
-}
+    const BUILD_LABELS = {
+      balanced: ['Balanced', 'Default mix of damage, defense, and late-game safety.'],
+      damage: ['Damage', 'More kill pressure, penetration, and faster objective fights.'],
+      armor: ['Armor / Sustain', 'Safer into burst, divers, or hard enemy engage.']
+    };
 
-function renderMG(){
-  const q=document.getElementById('es').value.toLowerCase();
-  document.getElementById('mg').innerHTML=heroList.filter(h=>h.name.toLowerCase().includes(q)).map(h=>{
-    const dis=!!enemyTeam.find(e=>e.name===h.name)||enemyTeam.length>=5;
-    const s=rs(h);
-    return`<div class="minicard${dis?' dis':''}" onclick="addE('${h.name.replace(/'/g,"\\'")}')">
-      <div class="mthumb" style="background:${s.grad}">
-        <span class="mthumb-e">${h.icon}</span>
-        ${hSrc(h.wn)?`<img class="mthumb-img" src="${hSrc(h.wn)}" alt="${h.name}" loading="lazy" onerror="hErr(this,'${h.wn.replace(/'/g,"\\'")}')">`:''}
-      </div>
-      <div class="mname">${h.name}</div>
-    </div>`;
-  }).join('');
-}
+    const ROLE_GUIDE = {
+      Tank: {
+        emblem: 'Tank emblem: Firmness, Tenacity, Brave Smite',
+        spell: 'Flicker for engage, Revitalize if your team needs sustain',
+        lane: 'Roam: protect your carry until level 4, then force turtle vision.',
+        early: 'Do not chase kills first. Check bushes, open vision, and save CC for enemy dash heroes.',
+        mid: 'Start fights only when damage dealers are close enough to follow.',
+        late: 'Stand between assassin paths and your marksman. Winning one peel can win the game.'
+      },
+      Fighter: {
+        emblem: 'Fighter emblem: Firmness, Festival of Blood, Brave Smite',
+        spell: 'Flicker for outplays, Vengeance into heavy basic attacks',
+        lane: 'EXP lane: freeze near your tower if behind, cut wave only with map vision.',
+        early: 'Trade around cooldowns. Do not lose HP before turtle spawn.',
+        mid: 'Push side lane first, then rotate. Force enemies to answer you.',
+        late: 'Enter after enemy CC is used. Your job is backline pressure, not first death.'
+      },
+      Assassin: {
+        emblem: 'Assassin emblem: Rupture, Weapon Master, Killing Spree',
+        spell: 'Retribution if jungling, Execute or Petrify for lane burst',
+        lane: 'Jungle: farm fast, gank overextended lanes, and never coin-flip turtle alone.',
+        early: 'Track enemy mage and roamer before diving. Free kills beat risky kills.',
+        mid: 'Kill the enemy damage dealer before objectives. No pick, no lord rush.',
+        late: 'Wait in fog. If you show first, the enemy carries play safe.'
+      },
+      Mage: {
+        emblem: 'Mage emblem: Rupture, Bargain Hunter, Impure Rage',
+        spell: 'Flicker by default, Purify into chain CC',
+        lane: 'Mid: clear first wave quickly, then move with roamer to one side.',
+        early: 'Poke before objectives. Mana and position matter more than random fights.',
+        mid: 'Stay behind frontline and punish enemies walking through river choke points.',
+        late: 'Hold burst for carries or divers. Do not waste full combo on tanks unless lord is free.'
+      },
+      Marksman: {
+        emblem: 'Marksman emblem: Swift, Weapon Master, Quantum Charge',
+        spell: 'Flicker by default, Inspire for snowball lanes, Purify into hard CC',
+        lane: 'Gold lane: farm first 5 minutes. One bad death delays your power spike.',
+        early: 'Last-hit safely and watch map before hitting tower plates.',
+        mid: 'Join fights after your second item. Stand behind tank, not beside tank.',
+        late: 'Hit the closest safe target. Staying alive is usually more damage than chasing.'
+      },
+      Support: {
+        emblem: 'Support emblem: Agility, Pull Yourself Together, Focusing Mark',
+        spell: 'Flicker for saves, Purify into suppress/chain CC',
+        lane: 'Roam: babysit weak lanes early, then play around your strongest carry.',
+        early: 'Give vision and reset bad fights. Your deaths are expensive.',
+        mid: 'Use ultimates for objective fights, not random river pokes.',
+        late: 'Stay close enough to save carries but far enough to avoid being caught first.'
+      }
+    };
 
-function scoreCounterItems(){
-  const sc={};
-  const ROLE_CI={
-    Tank:    [{e:'🌑',n:'Malefic Roar',w:'Armor pen shreds tank defense',p:'high'},{e:'💠',n:'Divine Glaive',w:'Magic pen vs tanky supports',p:'med'}],
-    Fighter: [{e:'❄️',n:'Dominance Ice',w:'Cuts attack speed & crits',p:'high'},{e:'🧲',n:'Antique Cuirass',w:'Reduces burst physical damage',p:'high'}],
-    Assassin:[{e:'🔵',n:"Athena's Shield",w:'Absorbs their burst combo',p:'high'},{e:'💀',n:'Immortality',w:'Second life after burst',p:'high'}],
-    Mage:    [{e:'🌑',n:'Radiant Armor',w:'Reduces stacking magic damage',p:'high'},{e:'🔵',n:"Athena's Shield",w:'Absorbs magic burst window',p:'high'}],
-    Marksman:[{e:'❄️',n:'Dominance Ice',w:'Reduces crit & attack speed',p:'high'},{e:'🛡️',n:'Blade Armor',w:'Returns crit damage to them',p:'med'}],
-    Support: [{e:'⚡',n:'Necklace of Durance',w:'Cuts healing by 50%',p:'high'},{e:'🗡️',n:'Sea Halberd',w:'Reduces lifesteal on hit',p:'high'}],
-  };
-  enemyTeam.forEach(h=>{
-    h.ci.forEach(ci=>{
-      if(!sc[ci.n])sc[ci.n]={e:ci.e,n:ci.n,reasons:[],score:0,prio:'med'};
-      sc[ci.n].reasons.push(`vs <b>${h.name}</b>: ${ci.w}`);
-      sc[ci.n].score+=3;
-    });
-    h.roles.forEach(role=>{
-      (ROLE_CI[role]||[]).forEach(r=>{
-        if(!sc[r.n])sc[r.n]={e:r.e,n:r.n,reasons:[],score:0,prio:r.p};
-        sc[r.n].reasons.push(`vs ${role} <b>${h.name}</b>: ${r.w}`);
-        sc[r.n].score+=1;
-        if(r.p==='high')sc[r.n].prio='high';
+    const THREAT_NAMES = {
+      sustain: ['Estes','Rafaela','Angela','Floryn','Ruby','Uranus','Esmeralda','Yu Zhong','Thamuz','Alpha'],
+      dive: ['Fanny','Ling','Lancelot','Hayabusa','Saber','Gusion','Nolan','Joy','Benedetta','Chou','Paquito'],
+      burst: ['Eudora','Aurora','Vale','Kadita','Pharsa','Xavier','Harley','Selena','Gusion','Saber'],
+      control: ['Tigreal','Atlas','Franco','Khufra','Minotaur','Lolita','Johnson','Kaja','Minsitthar'],
+      shred: ['Karrie','Claude','Moskov','Miya','Melissa','Ixia','Natan','Demon Hunter Sword']
+    };
+
+    const ITEM_IMAGE_ALIASES = {
+      'Swift Boots': 'Warrior Boots',
+      'Rapid Boots': 'Magic Shoes',
+      'Guardian Helmet': 'Oracle',
+      'Queen’s Wings': 'Brute Force Breastplate',
+      "Queen's Wings": 'Brute Force Breastplate',
+      'Demon Hunter Sword': 'Sea Halberd',
+      'Golden Staff': 'Feather of Heaven',
+      'Haas’s Claws': 'Bloodlust Axe',
+      "Haas's Claws": 'Bloodlust Axe',
+      'Rose Gold Meteor': "Athena's Shield",
+      'Corrosion Scythe': 'Scarlet Phantom',
+      'Genius Wand': 'Divine Glaive',
+      'Glowing Wand': 'Lightning Truncheon',
+      'Winter Crown': 'Immortality',
+      'Enchanted Talisman': 'Clock of Destiny',
+      'Flask of the Oasis': 'Oracle',
+      'Favor Roam': 'Oracle',
+      'Conceal Roam': 'Magic Shoes',
+      'Thunder Belt': 'Endless Battle'
+    };
+
+    const HERO_IMAGE_OVERRIDES = {
+      Arlott: 'mlbb-assets/heroes/Arlott.png',
+      Chip: 'mlbb-assets/heroes/Chip.png',
+      Fredrinn: 'mlbb-assets/heroes/Fredrinn.png',
+      Ixia: 'mlbb-assets/heroes/Ixia.png',
+      Joy: 'mlbb-assets/heroes/Joy.png',
+      Novaria: 'mlbb-assets/heroes/Novaria.png',
+      Zhuxin: 'mlbb-assets/heroes/Zhuxin.png'
+    };
+
+    const state = { hero: HEROES.find(h => h.name === 'Miya'), style: 'balanced', enemies: [] };
+    const $ = id => document.getElementById(id);
+
+    function primaryRole(hero) {
+      if (hero.roles.includes('Marksman')) return 'Marksman';
+      if (hero.roles.includes('Mage') && !hero.roles.includes('Fighter')) return 'Mage';
+      return hero.roles[0];
+    }
+
+    function assetSafeName(name) {
+      return name
+        .replace(/ and /g, '_and_')
+        .replace(/[.'’]/g, '')
+        .replace(/\//g, '')
+        .replace(/\s+/g, '_');
+    }
+
+    function heroImg(hero) {
+      if (HERO_IMAGE_OVERRIDES[hero.name]) return HERO_IMAGE_OVERRIDES[hero.name];
+      return `mlbb-assets/heroes/${assetSafeName(hero.name)}.webp`;
+    }
+
+    function itemImg(name) {
+      const normalized = name === 'Athena’s Shield' ? "Athena's Shield" : name;
+      const imageName = ITEM_IMAGE_ALIASES[normalized] || normalized;
+      return `mlbb-assets/items/${assetSafeName(imageName)}.webp`;
+    }
+
+    function imageFrame(className, src, alt, emoji) {
+      return `<span class="${className}">
+        <span class="fallback-emoji">${emoji}</span>
+        <img class="asset-img" src="${src}" alt="" aria-hidden="true" loading="lazy" onerror="this.classList.add('err')">
+      </span>`;
+    }
+
+    function item(name, counterReason = '') {
+      const normalized = name === 'Athena’s Shield' ? "Athena's Shield" : name;
+      const meta = ITEM_META[name] || ITEM_META[normalized] || ['🔹','Flexible stat item'];
+      return { name, icon: meta[0], type: meta[1], stats: ITEM_STATS[name] || ITEM_STATS[normalized] || {}, counterReason };
+    }
+
+    function baseBuild(hero, style) {
+      const role = primaryRole(hero);
+      return (ROLE_BUILDS[role] || ROLE_BUILDS.Fighter)[style].map(n => item(n));
+    }
+
+    function enemyPressure() {
+      const pressure = {
+        physical: 0, magic: 0, frontline: 0, sustain: 0, dive: 0, burst: 0,
+        control: 0, attackSpeed: 0, healing: 0, pickoff: 0
+      };
+      for (const enemy of state.enemies) {
+        if (enemy.roles.includes('Marksman')) { pressure.physical += 2; pressure.attackSpeed += 2; }
+        if (enemy.roles.includes('Assassin')) { pressure.physical += 2; pressure.dive += 2; pressure.pickoff += 1; }
+        if (enemy.roles.includes('Mage')) { pressure.magic += 2; pressure.burst += 1; }
+        if (enemy.roles.includes('Fighter')) { pressure.physical += 1; pressure.frontline += 1; pressure.dive += 1; }
+        if (enemy.roles.includes('Tank')) { pressure.frontline += 2; pressure.control += 1; }
+        if (enemy.roles.includes('Support')) { pressure.sustain += 1; pressure.healing += 1; }
+        if (THREAT_NAMES.sustain.includes(enemy.name)) { pressure.sustain += 2; pressure.healing += 2; }
+        if (THREAT_NAMES.dive.includes(enemy.name)) pressure.dive += 2;
+        if (THREAT_NAMES.burst.includes(enemy.name)) pressure.burst += 2;
+        if (THREAT_NAMES.control.includes(enemy.name)) pressure.control += 2;
+        if (THREAT_NAMES.shred.includes(enemy.name)) pressure.attackSpeed += 2;
+      }
+      return pressure;
+    }
+
+    function recommendedStyle(hero, pressure) {
+      const role = primaryRole(hero);
+      const danger = pressure.dive + pressure.burst + pressure.control;
+      if (danger >= 4 || (role === 'Marksman' && pressure.dive >= 2)) return 'armor';
+      if (['Marksman','Assassin','Mage','Fighter'].includes(role) && pressure.frontline >= 3) return 'damage';
+      if ((role === 'Tank' || role === 'Support') && pressure.attackSpeed + pressure.healing >= 4) return 'armor';
+      return 'balanced';
+    }
+
+    function styleScore(stats, pressure, hero, build) {
+      const role = primaryRole(hero);
+      let score = 58;
+      if (['Marksman','Assassin','Fighter'].includes(role)) score += Math.min(18, (stats.physicalDamage + stats.penetration) / 7);
+      if (role === 'Mage') score += Math.min(18, (stats.magicDamage + stats.penetration) / 7);
+      if (role === 'Tank' || role === 'Support') score += Math.min(20, (stats.armor + stats.magicDefense + stats.sustain + stats.utility) / 12);
+      if (pressure.physical > pressure.magic) score += Math.min(10, stats.armor / 12);
+      if (pressure.magic > pressure.physical) score += Math.min(10, stats.magicDefense / 12);
+      if (pressure.healing >= 2 && build.some(i => ['Sea Halberd','Necklace of Durance','Dominance Ice'].includes(i.name))) score += 8;
+      if (pressure.dive >= 2 && build.some(i => ['Wind of Nature','Winter Crown','Immortality','Antique Cuirass'].includes(i.name))) score += 8;
+      return Math.max(0, Math.min(99, Math.round(score)));
+    }
+
+    function roleCounterItem(itemName, heroRole) {
+      const mageMap = {
+        'Sea Halberd': 'Necklace of Durance',
+        'Malefic Roar': 'Divine Glaive',
+        'Blade Armor': 'Winter Crown',
+        'Wind of Nature': 'Winter Crown',
+        'Dominance Ice': 'Winter Crown'
+      };
+      const tankMap = {
+        'Sea Halberd': 'Dominance Ice',
+        'Necklace of Durance': 'Dominance Ice',
+        'Malefic Roar': 'Dominance Ice',
+        'Wind of Nature': 'Antique Cuirass'
+      };
+      const supportMap = {
+        'Sea Halberd': 'Dominance Ice',
+        'Malefic Roar': 'Dominance Ice',
+        'Blade Armor': 'Dominance Ice',
+        'Wind of Nature': 'Winter Crown'
+      };
+      const physicalMap = {
+        "Athena's Shield": 'Rose Gold Meteor',
+        'Necklace of Durance': 'Sea Halberd',
+        'Radiant Armor': 'Rose Gold Meteor',
+        'Blade Armor': 'Wind of Nature',
+        'Dominance Ice': 'Wind of Nature'
+      };
+      if (heroRole === 'Mage') return mageMap[itemName] || itemName;
+      if (heroRole === 'Tank') return tankMap[itemName] || itemName;
+      if (heroRole === 'Support') return supportMap[itemName] || itemName;
+      if (['Marksman','Assassin','Fighter'].includes(heroRole)) return physicalMap[itemName] || itemName;
+      return itemName;
+    }
+
+    function counterItems(hero) {
+      const found = new Map();
+      const heroRole = primaryRole(hero);
+      for (const enemy of state.enemies) {
+        for (const rule of COUNTER_RULES) {
+          const nameMatch = rule.names && rule.names.includes(enemy.name);
+          const roleMatch = rule.roles && enemy.roles.some(r => rule.roles.includes(r));
+          if (nameMatch || roleMatch) {
+            const targetItem = roleCounterItem(rule.item, heroRole);
+            const existing = found.get(targetItem) || { score: 0, reasons: [] };
+            existing.score += nameMatch ? 4 : 2;
+            existing.reasons.push(`${enemy.name}: ${rule.reason}`);
+            found.set(targetItem, existing);
+          }
+        }
+      }
+      return [...found.entries()].map(([name, data]) => {
+        const built = item(name, data.reasons.join('; '));
+        return { ...built, score: data.score };
+      }).filter(ci => {
+        if (heroRole === 'Mage') return !['Blade Armor','Wind of Nature','Sea Halberd','Malefic Roar','Dominance Ice'].includes(ci.name);
+        if (heroRole === 'Tank' || heroRole === 'Support') return !['Malefic Roar','Berserker’s Fury'].includes(ci.name);
+        return ci.name !== 'Necklace of Durance';
+      }).sort((a,b) => b.score - a.score).slice(0, 2);
+    }
+
+    function activeBuild() {
+      const build = baseBuild(state.hero, state.style);
+      const counters = counterItems(state.hero);
+      const inserts = [];
+      counters.forEach(counter => {
+        const existing = build.find(item => item.name === counter.name);
+        if (existing) {
+          existing.isCounter = true;
+          existing.counterReason = counter.counterReason;
+          return;
+        }
+        inserts.push(counter);
       });
-    });
-  });
-  return Object.values(sc).sort((a,b)=>b.score-a.score);
-}
-
-function buildCounterBuild(hero){
-  const ranked=scoreCounterItems();
-  const base=[...hero.build]; // 6 items, index 0 = boots
-  const inBuild=new Set(base.map(i=>i.n));
-  // Mark slots that are already counter items (double duty)
-  const slots=base.map((item)=>{
-    const counterMatch=ranked.find(ci=>ci.n===item.n);
-    return{...item,kind:counterMatch?'both':'core',reasons:counterMatch?counterMatch.reasons:[],prio:counterMatch?counterMatch.prio:'med'};
-  });
-  // Only replace the last 2 slots (slots 5 & 6, indices 4 & 5) — keep the hero's core build intact
-  const toInsert=ranked.filter(ci=>!inBuild.has(ci.n));
-  let ins=0;
-  for(let i=5;i>=4&&ins<toInsert.length;i--){
-    if(slots[i].kind==='core'){
-      const ci=toInsert[ins++];
-      slots[i]={n:ci.n,e:ci.e,t:'Counter',kind:'counter',reasons:ci.reasons,prio:ci.prio};
+      inserts.forEach((counter, idx) => {
+        const replaceAt = build.length - 1 - idx;
+        build[replaceAt] = { ...counter, isCounter: true };
+      });
+      return build;
     }
-  }
-  return slots;
-}
 
-function itemBox(item,idx){
-  const isCounter=item.kind==='counter';
-  const isBoth=item.kind==='both';
-  const borderCol=isCounter?'#ef444466':isBoth?'#f59e0b66':'#1a1a3a';
-  const glowCol=isCounter?'#ef444422':isBoth?'#f59e0b22':'none';
-  const badge=isCounter?`<span style="position:absolute;top:3px;right:3px;background:#ef444488;color:#fff;font-size:.42rem;font-weight:800;padding:1px 4px;border-radius:4px;z-index:10;letter-spacing:.5px">COUNTER</span>`
-    :isBoth?`<span style="position:absolute;top:3px;right:3px;background:#f59e0b88;color:#000;font-size:.42rem;font-weight:800;padding:1px 4px;border-radius:4px;z-index:10;letter-spacing:.5px">CORE+</span>`:'';
-  const numBadge=`<span style="position:absolute;top:3px;left:3px;background:#000a;color:#888;font-size:.42rem;font-weight:800;padding:1px 4px;border-radius:4px;z-index:10">${idx+1}</span>`;
-  return`<div class="cb-item" style="border-color:${borderCol};box-shadow:0 0 18px ${glowCol}" title="${item.n}${item.reasons.length?'\n'+item.reasons.map(r=>r.replace(/<[^>]+>/g,'')).join('\n'):''}">
-    <div class="cb-img-wrap">
-      ${numBadge}${badge}
-      <span class="cb-emoji">${item.e}</span>
-      <img class="cb-img" src="${iSrc(item.n)}" alt="${item.n}" loading="lazy" onerror="this.style.display='none'">
-    </div>
-    <div class="cb-label">
-      <div class="cb-name">${item.n}</div>
-      <div class="cb-type" style="color:${isCounter?'#f87171':isBoth?'#fbbf24':'#6b7280'}">${item.t}</div>
-    </div>
-  </div>`;
-}
-
-function renderCR(){
-  const el=document.getElementById('cr');
-  if(!enemyTeam.length){
-    el.innerHTML=`<div class="empty"><div style="font-size:2rem;margin-bottom:10px">👈</div>${myHero?`<b style="color:#93c5fd">${myHero.name}</b> is ready — now pick enemy heroes`:'Pick your hero + enemy team to get a full counter build'}</div>`;
-    return;
-  }
-
-  if(!myHero){
-    // No hero selected: show top counter items as before
-    const ranked=scoreCounterItems().slice(0,6);
-    el.innerHTML=`<div style="margin-bottom:14px;padding:10px 12px;background:#1a100088;border:1px solid #f59e0b33;border-radius:10px;font-size:.74rem;color:#f59e0b">
-      ⬆️ Pick <b>Your Hero</b> above for a personalized full build recommendation
-    </div>`+ranked.map(item=>`
-    <div class="crec">
-      <div class="crec-h">
-        <div class="crecbox"><span style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;z-index:1">${item.e}</span>
-          <img class="crecbox-img" src="${iSrc(item.n)}" alt="${item.n}" loading="lazy" onerror="iErr(this,'${item.n}',0)"></div>
-        <span class="crecname">${item.n}</span>
-        <span class="prio ${item.prio==='high'?'ph':'pm'}">${item.prio==='high'?'🔴 HIGH':'🟡 MED'}</span>
-      </div>
-      <div class="crecreason">${[...new Set(item.reasons)].join('<br>')}</div>
-    </div>`).join('')+
-    `<div class="tip">💡 Select your hero above to get a full 6-item build tailored to counter this enemy team.</div>`;
-    return;
-  }
-
-  // Full 6-item counter build
-  const slots=buildCounterBuild(myHero);
-  const counterCount=slots.filter(s=>s.kind==='counter').length;
-  const bothCount=slots.filter(s=>s.kind==='both').length;
-
-  // Reasoning section: only counter + both items
-  const reasonItems=slots.filter(s=>s.kind!=='core'&&s.reasons.length);
-
-  el.innerHTML=`
-  <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;padding:12px 14px;background:#06060e88;border:1px solid #ffffff11;border-radius:12px">
-    <div style="width:40px;height:40px;border-radius:10px;overflow:hidden;background:#0a0a1a;position:relative;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:1.3rem;border:1px solid #3b82f644">
-      ${myHero.icon}
-      ${hSrc(myHero.wn)?`<img src="${hSrc(myHero.wn)}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:top" onerror="this.style.display='none'">`:''}
-    </div>
-    <div>
-      <div style="font-size:.82rem;font-weight:800;color:#fff;font-family:'Oxanium',sans-serif">${myHero.name} — Counter Build</div>
-      <div style="font-size:.65rem;color:#555;margin-top:2px">${counterCount} counter swap${counterCount!==1?'s':''} · ${bothCount} core+counter overlap</div>
-    </div>
-  </div>
-
-  <div class="cb-grid">${slots.map((s,i)=>itemBox(s,i)).join('')}</div>
-
-  <div style="display:flex;gap:10px;margin:14px 0 10px;font-size:.62rem;flex-wrap:wrap">
-    <span style="display:flex;align-items:center;gap:5px"><span style="width:10px;height:10px;border-radius:3px;background:#ef444466;border:1px solid #ef4444;display:inline-block"></span><span style="color:#888">Counter swap</span></span>
-    <span style="display:flex;align-items:center;gap:5px"><span style="width:10px;height:10px;border-radius:3px;background:#f59e0b66;border:1px solid #f59e0b;display:inline-block"></span><span style="color:#888">Core + counter</span></span>
-    <span style="display:flex;align-items:center;gap:5px"><span style="width:10px;height:10px;border-radius:3px;background:#1a1a3a;border:1px solid #2a2a5a;display:inline-block"></span><span style="color:#888">Standard core</span></span>
-  </div>
-
-  ${reasonItems.length?`<div style="font-size:.68rem;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:#f59e0b;margin:14px 0 8px;font-family:'Oxanium',sans-serif">Why these counter items?</div>
-  ${reasonItems.map(item=>`<div class="crec" style="border-color:${item.kind==='counter'?'#ef444444':'#f59e0b44'}">
-    <div class="crec-h">
-      <div class="crecbox"><span style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;z-index:1">${item.e}</span>
-        <img class="crecbox-img" src="${iSrc(item.n)}" alt="${item.n}" loading="lazy" onerror="iErr(this,'${item.n}',0)"></div>
-      <span class="crecname">${item.n}</span>
-      <span class="prio ${item.prio==='high'?'ph':'pm'}">${item.prio==='high'?'🔴 HIGH':'🟡 MED'}</span>
-    </div>
-    <div class="crecreason">${[...new Set(item.reasons)].join('<br>')}</div>
-  </div>`).join('')}`:''}
-  <div class="tip">💡 <b style="color:#ccc">Tip:</b> Buy items in order 1→6. Rush <span style="color:#f87171">counter items</span> earlier if the enemy threat is high.</div>`;
-}
-
-// ── INIT ──────────────────────────────────────────────────────────
-renderRF();renderH();renderMyHeroSlot();renderSlots();renderMG();renderCR();
-
-// ── PARTICLE CANVAS ───────────────────────────────────────────────
-(function(){
-  const cv=document.getElementById('bg-canvas');
-  const cx=cv.getContext('2d');
-  let W,H,stars=[];
-  const N=120;
-  function resize(){W=cv.width=innerWidth;H=cv.height=innerHeight;}
-  resize();window.addEventListener('resize',()=>{resize();init();});
-  function rand(a,b){return a+Math.random()*(b-a);}
-  function mkStar(){
-    const hues=[270,45,190,0]; // purple, gold, cyan, red
-    const h=hues[Math.floor(Math.random()*hues.length)];
-    return{x:rand(0,W),y:rand(0,H),r:rand(.4,1.6),
-      vx:rand(-.15,.15),vy:rand(-.08,.08),
-      a:rand(.2,.8),da:rand(.003,.008)*( Math.random()>.5?1:-1),
-      color:`hsla(${h},100%,80%,`};
-  }
-  function init(){stars=Array.from({length:N},mkStar);}
-  init();
-  function draw(){
-    cx.clearRect(0,0,W,H);
-    // grid overlay
-    cx.strokeStyle='rgba(120,80,255,.04)';cx.lineWidth=1;
-    const g=60;
-    for(let x=0;x<W;x+=g){cx.beginPath();cx.moveTo(x,0);cx.lineTo(x,H);cx.stroke();}
-    for(let y=0;y<H;y+=g){cx.beginPath();cx.moveTo(0,y);cx.lineTo(W,y);cx.stroke();}
-    // stars
-    stars.forEach(s=>{
-      s.x+=s.vx;s.y+=s.vy;
-      if(s.x<0)s.x=W;if(s.x>W)s.x=0;
-      if(s.y<0)s.y=H;if(s.y>H)s.y=0;
-      s.a+=s.da;
-      if(s.a>0.85||s.a<0.1)s.da*=-1;
-      cx.beginPath();
-      cx.arc(s.x,s.y,s.r,0,Math.PI*2);
-      cx.fillStyle=s.color+s.a+')';
-      cx.fill();
-    });
-    // shooting star occasionally
-    if(Math.random()<.003){
-      const sx=rand(0,W),sy=rand(0,H*.5);
-      const len=rand(80,160);
-      const g2=cx.createLinearGradient(sx,sy,sx+len,sy+len*.3);
-      g2.addColorStop(0,'rgba(255,220,100,0)');
-      g2.addColorStop(.5,'rgba(255,220,100,.7)');
-      g2.addColorStop(1,'rgba(255,220,100,0)');
-      cx.strokeStyle=g2;cx.lineWidth=1.5;
-      cx.beginPath();cx.moveTo(sx,sy);cx.lineTo(sx+len,sy+len*.3);cx.stroke();
+    function sumStats(build) {
+      const totals = { physicalDamage:0, magicDamage:0, armor:0, magicDefense:0, sustain:0, attackSpeed:0, penetration:0, utility:0 };
+      build.forEach(it => Object.entries(it.stats).forEach(([key, val]) => totals[key] += val));
+      return totals;
     }
-    requestAnimationFrame(draw);
-  }
-  draw();
-})();
-</script>
-<script src="app.js"></script>
-<script src="scanner.js"></script>
+
+    function renderHeroList() {
+      const q = $('heroSearch').value.trim().toLowerCase();
+      $('heroList').innerHTML = HEROES
+        .filter(h => h.name.toLowerCase().includes(q) || h.roles.join(' ').toLowerCase().includes(q))
+        .map(h => `<button class="hero-row ${h.name === state.hero.name ? 'active' : ''}" type="button" onclick="pickHero('${h.name.replace(/'/g,"\\'")}')">
+          ${imageFrame('avatar', heroImg(h), h.name, h.icon)}
+          <span><span class="name">${h.name}</span><span class="roles">${h.roles.map(role => `<span class="chip">${role}</span>`).join('')}</span></span>
+        </button>`).join('');
+    }
+
+    function renderEnemyList() {
+      const q = $('enemySearch').value.trim().toLowerCase();
+      $('enemyList').innerHTML = HEROES
+        .filter(h => h.name.toLowerCase().includes(q) || h.roles.join(' ').toLowerCase().includes(q))
+        .map(h => {
+          const picked = state.enemies.some(e => e.name === h.name);
+          const disabled = picked || state.enemies.length >= 5;
+          return `<button class="enemy-pick" type="button" ${disabled ? 'disabled' : ''} onclick="addEnemy('${h.name.replace(/'/g,"\\'")}')">
+            ${imageFrame('mini-avatar', heroImg(h), h.name, h.icon)}
+            <span><span class="name">${h.name}</span><span class="roles">${h.roles.slice(0,2).map(role => `<span class="chip">${role}</span>`).join('')}</span></span>
+          </button>`;
+        }).join('');
+    }
+
+    function renderEnemySlots() {
+      $('enemySlots').innerHTML = [0,1,2,3,4].map(i => {
+        const h = state.enemies[i];
+        if (!h) return `<div class="slot">Slot ${i + 1}</div>`;
+        return `<div class="slot filled"><button type="button" onclick="removeEnemy('${h.name.replace(/'/g,"\\'")}')">×</button><div>${imageFrame('mini-avatar', heroImg(h), h.name, h.icon)}<b>${h.name}</b></div></div>`;
+      }).join('');
+      $('summary').textContent = `${state.enemies.length} ${state.enemies.length === 1 ? 'enemy' : 'enemies'} selected`;
+    }
+
+    function renderBuildTabs() {
+      const rec = recommendedStyle(state.hero, enemyPressure());
+      $('buildTabs').innerHTML = Object.entries(BUILD_LABELS).map(([key, [label, desc]]) => `
+        <button class="build-tab ${state.style === key ? 'active' : ''}" type="button" onclick="setStyle('${key}')">
+          <b>${label}</b><span>${desc}</span>${rec === key ? '<span class="rec-badge">Recommended</span>' : ''}
+        </button>`).join('');
+    }
+
+    function renderSelectedHero() {
+      const role = primaryRole(state.hero);
+      $('bigAvatar').innerHTML = `<span class="fallback-emoji">${state.hero.icon}</span><img class="asset-img" src="${heroImg(state.hero)}" alt="${state.hero.name}" onerror="this.classList.add('err')">`;
+      $('heroName').textContent = state.hero.name;
+      $('heroRoles').innerHTML = state.hero.roles.map(r => `<span class="chip">${r}</span>`).join('');
+      $('heroDesc').textContent = `${state.hero.name} is using a ${BUILD_LABELS[state.style][0].toLowerCase()} ${role.toLowerCase()} setup. Counter items replace the final slots when enemies demand it.`;
+    }
+
+    function renderItems(build) {
+      $('items').innerHTML = build.map((it, idx) => `
+        <div class="item ${it.isCounter ? 'counter' : ''}">
+          ${it.isCounter ? '<span class="badge">COUNTER</span>' : ''}
+          ${imageFrame('item-art', itemImg(it.name), it.name, it.icon)}
+          <div class="item-name">${idx + 1}. ${it.name}</div>
+          <div class="item-type">${it.type}</div>
+        </div>`).join('');
+    }
+
+    function renderStats(stats) {
+      const labels = [
+        ['physicalDamage','Physical'], ['magicDamage','Magic'], ['armor','Armor'], ['magicDefense','Magic Def'],
+        ['sustain','HP/Sustain'], ['attackSpeed','Atk Speed'], ['penetration','Penetration'], ['utility','Utility']
+      ];
+      $('stats').innerHTML = labels.map(([key, label]) => {
+        const value = Math.min(100, stats[key]);
+        return `<div class="stat"><span>${label}</span><span class="bar"><span class="fill" style="--w:${value}%"></span></span><b>${value}</b></div>`;
+      }).join('');
+    }
+
+    function renderCoach(build, stats, pressure) {
+      const role = primaryRole(state.hero);
+      const guide = ROLE_GUIDE[role] || ROLE_GUIDE.Fighter;
+      const rec = recommendedStyle(state.hero, pressure);
+      const score = styleScore(stats, pressure, state.hero, build);
+      const recText = rec === state.style ? 'You are on the best style for this draft.' : `Switch to ${BUILD_LABELS[rec][0]} for this enemy draft.`;
+      const recAction = rec === state.style ? '' : `<button class="coach-action" type="button" onclick="setStyle('${rec}')">Use ${BUILD_LABELS[rec][0]}</button>`;
+      const damageType = stats.magicDamage > stats.physicalDamage ? 'magic burst' : stats.attackSpeed > stats.physicalDamage ? 'basic attacks' : 'physical damage';
+      $('coachStrip').innerHTML = `
+        <div class="coach-card">
+          <div class="score-ring" style="--score:${score}"><span>${score}</span></div>
+          <div class="coach-small" style="text-align:center">Build fit</div>
+        </div>
+        <div class="coach-card"><div class="coach-kicker">Best Move</div><div class="coach-value">${recText}</div>${recAction}<div class="coach-small">Updates when you add enemies.</div></div>
+        <div class="coach-card"><div class="coach-kicker">Spell</div><div class="coach-value">${guide.spell}</div><div class="coach-small">Use Purify over greed if enemy CC is high.</div></div>
+        <div class="coach-card"><div class="coach-kicker">Win Condition</div><div class="coach-value">${damageType}</div><div class="coach-small">${guide.lane}</div></div>`;
+    }
+
+    function renderGamePlan(pressure) {
+      const role = primaryRole(state.hero);
+      const guide = ROLE_GUIDE[role] || ROLE_GUIDE.Fighter;
+      const draftTip = pressure.control >= 3
+        ? 'Enemy has heavy CC: wait for key stuns/hooks before committing.'
+        : pressure.dive >= 3
+          ? 'Enemy can dive: keep one escape tool and play close to vision.'
+          : pressure.healing >= 2
+            ? 'Enemy sustain is high: force anti-heal early and do not take slow losing fights.'
+            : 'Draft is playable: farm cleanly, fight around item spikes, and avoid random river deaths.';
+      $('gamePlan').innerHTML = [
+        `<b>Emblem:</b> ${guide.emblem}`,
+        `<b>Early:</b> ${guide.early}`,
+        `<b>Mid:</b> ${guide.mid}`,
+        `<b>Late:</b> ${guide.late}`,
+        `<b>Draft read:</b> ${draftTip}`
+      ].map(row => `<div class="plan-row">${row}</div>`).join('');
+    }
+
+    function renderThreats(pressure) {
+      const rows = [
+        ['Burst', pressure.burst, 'Buy magic/physical safety before greed items.'],
+        ['Physical DPS', pressure.physical + pressure.attackSpeed, 'Respect basic-attack carries. Use armor, attack-speed slow, or physical immunity.'],
+        ['Dive', pressure.dive, 'Stay near peel and hold escape until assassins show.'],
+        ['Crowd Control', pressure.control, 'Purify/Flicker value is high. Do not face-check bushes.'],
+        ['Healing', pressure.healing, 'Anti-heal is mandatory if this reaches medium or high.'],
+        ['Frontline', pressure.frontline, 'Penetration and objective control matter more than chasing.']
+      ].filter(row => row[1] > 0);
+      if (!rows.length) {
+        $('threats').innerHTML = '<div class="threat-row low">Pick enemies to get draft-specific threats and counter priorities.</div>';
+        return;
+      }
+      $('threats').innerHTML = rows.sort((a,b) => b[1] - a[1]).map(([label, value, tip]) => {
+        const level = value >= 4 ? 'high' : value >= 2 ? 'med' : 'low';
+        const text = value >= 4 ? 'High' : value >= 2 ? 'Medium' : 'Low';
+        return `<div class="threat-row ${level}"><b>${label}: ${text}</b><br>${tip}</div>`;
+      }).join('');
+    }
+
+    function renderNotes(build, stats) {
+      const topStats = Object.entries(stats).sort((a,b) => b[1] - a[1]).slice(0, 3).map(([key]) => key);
+      const readable = {
+        physicalDamage:'physical damage', magicDamage:'magic damage', armor:'armor', magicDefense:'magic defense',
+        sustain:'HP and sustain', attackSpeed:'attack speed', penetration:'penetration', utility:'utility'
+      };
+      const counterNotes = build.filter(i => i.isCounter).map(i => `${i.name} helps because ${i.counterReason}.`);
+      const styleNote = {
+        balanced: 'Use this when the match is normal and you still need room for enemy-counter swaps.',
+        damage: 'Use this when your team needs you to carry fights, burst targets, or end faster.',
+        armor: 'Use this when enemies are diving you, bursting you, or forcing long fights.'
+      }[state.style];
+      const rec = recommendedStyle(state.hero, enemyPressure());
+      const recNote = rec === state.style
+        ? 'This style fits the current enemy draft.'
+        : `Recommended adjustment: switch to ${BUILD_LABELS[rec][0]} before the next fight.`;
+      $('notes').innerHTML = [
+        `${BUILD_LABELS[state.style][0]} build leans into ${topStats.map(k => readable[k]).join(', ')}.`,
+        styleNote,
+        recNote,
+        ...counterNotes
+      ].map(note => `<div class="note">${note}</div>`).join('');
+    }
+
+    function render() {
+      const build = activeBuild();
+      const stats = sumStats(build);
+      const pressure = enemyPressure();
+      $('buildTitle').textContent = `${state.hero.name} ${BUILD_LABELS[state.style][0]} Build`;
+      $('buildFocus').textContent = primaryRole(state.hero);
+      renderHeroList();
+      renderEnemySlots();
+      renderEnemyList();
+      renderBuildTabs();
+      renderSelectedHero();
+      renderItems(build);
+      renderStats(stats);
+      renderCoach(build, stats, pressure);
+      renderGamePlan(pressure);
+      renderThreats(pressure);
+      renderNotes(build, stats);
+    }
+
+    function pickHero(name) { state.hero = HEROES.find(h => h.name === name); render(); }
+    function setStyle(style) { state.style = style; render(); }
+    function addEnemy(name) {
+      if (state.enemies.length >= 5 || state.enemies.some(h => h.name === name)) return;
+      state.enemies.push(HEROES.find(h => h.name === name));
+      render();
+    }
+    function removeEnemy(name) { state.enemies = state.enemies.filter(h => h.name !== name); render(); }
+
+    $('heroSearch').addEventListener('input', renderHeroList);
+    $('enemySearch').addEventListener('input', renderEnemyList);
+    $('clearEnemies').addEventListener('click', () => { state.enemies = []; render(); });
+    render();
+  </script>
 </body>
 </html>
