@@ -240,7 +240,7 @@
       position: relative;
     }
 
-    .item.counter { border-color: rgba(255,107,107,.75); box-shadow: inset 0 0 0 1px rgba(255,107,107,.16); }
+    .item.counter { border-color: rgba(255,107,107,.75); box-shadow: inset 0 0 0 1px rgba(255,107,107,.16), 0 0 22px rgba(255,107,107,.08); }
     .item-art {
       width: 54px;
       aspect-ratio: 1;
@@ -256,6 +256,17 @@
     }
     .item-name { font-weight: 800; font-size: .82rem; line-height: 1.15; }
     .item-type { color: var(--muted); font-size: .72rem; line-height: 1.25; }
+    .item-phase {
+      width: fit-content;
+      border-radius: 999px;
+      background: rgba(85,199,255,.12);
+      color: #aee6ff;
+      padding: 2px 6px;
+      font-size: .58rem;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+    }
     .badge {
       position: absolute;
       top: 7px;
@@ -487,11 +498,55 @@
       margin-top: 4px;
     }
 
+    .matchup-strip {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+
+    .matchup-card {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: linear-gradient(160deg, #101827, #0c0f17);
+      padding: 12px;
+      min-width: 0;
+    }
+
+    .matchup-card.danger { border-color: rgba(255,107,107,.55); }
+    .matchup-card.good { border-color: rgba(110,231,168,.45); }
+    .matchup-label {
+      color: var(--muted);
+      font-size: .68rem;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      margin-bottom: 6px;
+    }
+
+    .matchup-main {
+      color: #f5f7fb;
+      font-size: 1rem;
+      font-weight: 900;
+      line-height: 1.15;
+    }
+
+    .matchup-tip {
+      color: #aab6cb;
+      font-size: .78rem;
+      line-height: 1.35;
+      margin-top: 6px;
+    }
+
+    .score-ring.strong { background: conic-gradient(var(--green) calc(var(--score) * 1%), #202638 0); }
+    .score-ring.stable { background: conic-gradient(var(--gold) calc(var(--score) * 1%), #202638 0); }
+    .score-ring.risky { background: conic-gradient(var(--red) calc(var(--score) * 1%), #202638 0); }
+
     @media (max-width: 1150px) {
       .app { grid-template-columns: 280px 1fr; }
       .right { grid-column: 1 / -1; }
       .enemy-list { max-height: 360px; grid-template-columns: repeat(4, minmax(0, 1fr)); }
       .coach-strip { grid-template-columns: repeat(2, 1fr); }
+      .matchup-strip { grid-template-columns: 1fr; }
     }
 
     @media (max-width: 820px) {
@@ -504,6 +559,7 @@
       .items { grid-template-columns: repeat(3, minmax(0, 1fr)); }
       .details-grid { grid-template-columns: 1fr; }
       .coach-strip { grid-template-columns: 1fr; }
+      .matchup-strip { grid-template-columns: 1fr; }
       .enemy-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       .enemy-slots { grid-template-columns: repeat(5, minmax(58px, 1fr)); overflow-x: auto; }
     }
@@ -548,6 +604,7 @@
           <span class="chip" id="buildFocus">Balanced</span>
         </div>
         <div class="coach-strip" id="coachStrip"></div>
+        <div class="matchup-strip" id="matchupStrip"></div>
         <div class="items" id="items"></div>
         <div class="details-grid">
           <div class="subpanel">
@@ -584,12 +641,6 @@
   </main>
 
   <script>
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.getRegistrations()
-        .then(registrations => registrations.forEach(registration => registration.unregister()))
-        .catch(() => {});
-    }
-
     const HEROES = [
       ['Tigreal','Tank','🛡️'],['Franco','Tank','⚓'],['Minotaur','Tank','🐂'],['Lolita','Tank,Support','🔨'],
       ['Akai','Tank','🐼'],['Johnson','Tank','🚗'],['Grock','Tank','🪨'],['Hylos','Tank','🐎'],['Uranus','Tank','🪐'],
@@ -992,6 +1043,38 @@
       return totals;
     }
 
+    function threatSummary(pressure) {
+      const rows = [
+        ['Physical DPS', pressure.physical + pressure.attackSpeed],
+        ['Burst', pressure.burst],
+        ['Dive', pressure.dive],
+        ['Crowd Control', pressure.control],
+        ['Healing', pressure.healing],
+        ['Frontline', pressure.frontline]
+      ].sort((a,b) => b[1] - a[1]);
+      return rows[0][1] > 0 ? rows[0] : ['No enemies picked', 0];
+    }
+
+    function advantageTier(score) {
+      if (score >= 82) return { label: 'Strong Advantage', className: 'strong', tip: 'Your build matches the draft well. Play around objectives and item spikes.' };
+      if (score >= 68) return { label: 'Stable Matchup', className: 'stable', tip: 'Playable draft. Follow the recommended build style if enemies get fed.' };
+      return { label: 'Risky Draft', className: 'risky', tip: 'Respect enemy burst/CC. Farm safely and use the recommended defensive style.' };
+    }
+
+    function nextItemTip(build) {
+      const counter = build.find(item => item.isCounter);
+      if (counter) return `${counter.name} is your priority counter. Buy it earlier if that enemy is fed.`;
+      const core = build[2] || build[1] || build[0];
+      return `${core.name} is your main power spike. Avoid forced fights before it is online.`;
+    }
+
+    function itemPhase(item, idx) {
+      if (item.isCounter) return 'Counter';
+      if (idx < 2) return 'Early';
+      if (idx < 4) return 'Core';
+      return 'Late';
+    }
+
     function renderHeroList() {
       const q = $('heroSearch').value.trim().toLowerCase();
       $('heroList').innerHTML = HEROES
@@ -1046,6 +1129,7 @@
         <div class="item ${it.isCounter ? 'counter' : ''}">
           ${it.isCounter ? '<span class="badge">COUNTER</span>' : ''}
           ${imageFrame('item-art', itemImg(it.name), it.name, it.icon)}
+          <div class="item-phase">${itemPhase(it, idx)}</div>
           <div class="item-name">${idx + 1}. ${it.name}</div>
           <div class="item-type">${it.type}</div>
         </div>`).join('');
@@ -1067,17 +1151,43 @@
       const guide = ROLE_GUIDE[role] || ROLE_GUIDE.Fighter;
       const rec = recommendedStyle(state.hero, pressure);
       const score = styleScore(stats, pressure, state.hero, build);
+      const tier = advantageTier(score);
       const recText = rec === state.style ? 'You are on the best style for this draft.' : `Switch to ${BUILD_LABELS[rec][0]} for this enemy draft.`;
       const recAction = rec === state.style ? '' : `<button class="coach-action" type="button" onclick="setStyle('${rec}')">Use ${BUILD_LABELS[rec][0]}</button>`;
       const damageType = stats.magicDamage > stats.physicalDamage ? 'magic burst' : stats.attackSpeed > stats.physicalDamage ? 'basic attacks' : 'physical damage';
       $('coachStrip').innerHTML = `
         <div class="coach-card">
-          <div class="score-ring" style="--score:${score}"><span>${score}</span></div>
-          <div class="coach-small" style="text-align:center">Build fit</div>
+          <div class="score-ring ${tier.className}" style="--score:${score}"><span>${score}</span></div>
+          <div class="coach-small" style="text-align:center">${tier.label}</div>
         </div>
         <div class="coach-card"><div class="coach-kicker">Best Move</div><div class="coach-value">${recText}</div>${recAction}<div class="coach-small">Updates when you add enemies.</div></div>
         <div class="coach-card"><div class="coach-kicker">Spell</div><div class="coach-value">${guide.spell}</div><div class="coach-small">Use Purify over greed if enemy CC is high.</div></div>
         <div class="coach-card"><div class="coach-kicker">Win Condition</div><div class="coach-value">${damageType}</div><div class="coach-small">${guide.lane}</div></div>`;
+    }
+
+    function renderMatchup(build, stats, pressure) {
+      const score = styleScore(stats, pressure, state.hero, build);
+      const tier = advantageTier(score);
+      const [threat, threatValue] = threatSummary(pressure);
+      const counterCount = build.filter(item => item.isCounter).length;
+      const threatText = threatValue >= 4 ? `${threat} is high` : threatValue >= 2 ? `${threat} is medium` : threat;
+      const counterText = counterCount ? `${counterCount} counter ${counterCount === 1 ? 'slot' : 'slots'} active` : 'Core build active';
+      $('matchupStrip').innerHTML = `
+        <div class="matchup-card ${tier.className === 'risky' ? 'danger' : 'good'}">
+          <div class="matchup-label">Draft Read</div>
+          <div class="matchup-main">${tier.label}</div>
+          <div class="matchup-tip">${tier.tip}</div>
+        </div>
+        <div class="matchup-card ${threatValue >= 4 ? 'danger' : ''}">
+          <div class="matchup-label">Main Threat</div>
+          <div class="matchup-main">${threatText}</div>
+          <div class="matchup-tip">${threatValue ? 'Your item swaps and spell choice should answer this first.' : 'Pick enemy heroes to unlock draft-specific advice.'}</div>
+        </div>
+        <div class="matchup-card">
+          <div class="matchup-label">Next Buy</div>
+          <div class="matchup-main">${counterText}</div>
+          <div class="matchup-tip">${nextItemTip(build)}</div>
+        </div>`;
     }
 
     function renderGamePlan(pressure) {
@@ -1157,6 +1267,7 @@
       renderItems(build);
       renderStats(stats);
       renderCoach(build, stats, pressure);
+      renderMatchup(build, stats, pressure);
       renderGamePlan(pressure);
       renderThreats(pressure);
       renderNotes(build, stats);
