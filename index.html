@@ -572,7 +572,11 @@
         <h1>MLBB Builds & Counters</h1>
         <div class="subtitle">Pick your hero, choose a build style, then add enemy heroes to see counter swaps and stats.</div>
       </div>
-      <div class="meta" id="summary">0 enemies selected</div>
+      <div class="meta" style="text-align:right">
+        <div style="font-size:.75rem;color:var(--green);font-weight:700;letter-spacing:.04em">Patch 1.9.58 · Season 33</div>
+        <div style="font-size:.7rem;color:var(--muted);margin-top:3px" id="lastUpdated"></div>
+        <div id="summary" style="margin-top:4px;font-size:.85rem">0 enemies selected</div>
+      </div>
     </header>
 
     <section class="panel">
@@ -670,7 +674,9 @@
       ['Wanwan','Marksman','🪡'],['Popol and Kupa','Marksman','🐺'],['Beatrix','Marksman','🔫'],['Melissa','Marksman','🧸'],
       ['Ixia','Marksman','☄️'],['Natan','Marksman','🌀'],['Brody','Marksman','⚡'],['Rafaela','Support','🪽'],
       ['Estes','Support','🌿'],['Diggie','Support','⏰'],['Angela','Support','💗'],['Kaja','Support,Fighter','⚡'],
-      ['Floryn','Support','🌸'],['Mathilda','Support,Assassin','🪶'],['Faramis','Support','💀']
+      ['Floryn','Support','🌸'],['Mathilda','Support,Assassin','🪶'],['Faramis','Support','💀'],
+      ['Cici','Fighter','🎀'],['Lukas','Fighter','⚡'],['Suyou','Fighter,Assassin','🌊'],
+      ['Prisca','Mage,Support','🌺'],['Melanies','Marksman','🎶']
     ].map(([name, roles, icon]) => ({ name, roles: roles.split(','), icon }));
 
     const ITEM_STATS = {
@@ -1267,6 +1273,10 @@
       renderItems(build);
       renderStats(stats);
       renderCoach(build, stats, pressure);
+
+      // Show last-updated date
+      const lu = $('lastUpdated');
+      if (lu) lu.textContent = 'Updated ' + new Date('2026-06-30').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
       renderMatchup(build, stats, pressure);
       renderGamePlan(pressure);
       renderThreats(pressure);
