@@ -706,62 +706,86 @@
 
     const ROLE_BUILDS = {
       Tank: {
-        balanced: ['Tough Boots','Dominance Ice',"Athena's Shield",'Antique Cuirass','Immortality','Oracle'],
-        damage: ['Tough Boots','Cursed Helmet','Thunder Belt','Dominance Ice','Immortality','Guardian Helmet'],
-        armor: ['Warrior Boots','Dominance Ice','Antique Cuirass','Blade Armor','Immortality','Guardian Helmet']
+        balanced: ['Tough Boots','Dominance Ice','Antique Cuirass',"Athena's Shield",'Oracle','Immortality'],
+        damage:   ['Tough Boots','Cursed Helmet','Guardian Helmet','Dominance Ice','Thunder Belt','Immortality'],
+        armor:    ['Warrior Boots','Dominance Ice','Antique Cuirass','Blade Armor','Guardian Helmet','Oracle']
       },
       Fighter: {
-        balanced: ['Warrior Boots','War Axe','Endless Battle','Queen’s Wings','Malefic Roar','Immortality'],
-        damage: ['Warrior Boots','Hunter Strike','Blade of Despair','Malefic Roar','Sea Halberd','Immortality'],
-        armor: ['Warrior Boots','War Axe','Dominance Ice','Queen’s Wings','Athena’s Shield','Immortality']
+        balanced: ['Warrior Boots','War Axe','Endless Battle','Hunter Strike','Blade of Despair','Malefic Roar'],
+        damage:   ['Warrior Boots','Hunter Strike','Blade of Despair','Malefic Roar','Sea Halberd','Wind of Nature'],
+        armor:    ['Warrior Boots','War Axe','Endless Battle',"Queen's Wings",'Blade of Despair','Immortality']
       },
       Assassin: {
-        balanced: ['Warrior Boots','Hunter Strike','Blade of the Heptaseas','Blade of Despair','Malefic Roar','Immortality'],
-        damage: ['Rapid Boots','Blade of the Heptaseas','Hunter Strike','Blade of Despair','Malefic Roar','Sea Halberd'],
-        armor: ['Tough Boots','Hunter Strike','Rose Gold Meteor','Queen’s Wings','Malefic Roar','Immortality']
+        balanced: ['Warrior Boots','Blade of the Heptaseas','Hunter Strike','Blade of Despair','Malefic Roar','Wind of Nature'],
+        damage:   ['Rapid Boots','Blade of the Heptaseas','Hunter Strike','Blade of Despair','Malefic Roar','Sea Halberd'],
+        armor:    ['Warrior Boots','Hunter Strike','Rose Gold Meteor','Blade of Despair','Malefic Roar','Immortality']
       },
       Mage: {
-        balanced: ['Arcane Boots','Clock of Destiny','Lightning Truncheon','Holy Crystal','Divine Glaive','Winter Crown'],
-        damage: ['Arcane Boots','Genius Wand','Glowing Wand','Holy Crystal','Divine Glaive','Blood Wings'],
-        armor: ['Tough Boots','Enchanted Talisman','Glowing Wand','Winter Crown','Oracle','Immortality']
+        balanced: ['Arcane Boots','Clock of Destiny','Lightning Truncheon','Holy Crystal','Divine Glaive','Blood Wings'],
+        damage:   ['Arcane Boots','Genius Wand','Holy Crystal','Lightning Truncheon','Divine Glaive','Blood Wings'],
+        armor:    ['Tough Boots','Clock of Destiny','Holy Crystal','Necklace of Durance','Divine Glaive','Winter Crown']
       },
       Marksman: {
-        balanced: ['Swift Boots','Demon Hunter Sword','Golden Staff','Windtalker','Malefic Roar','Wind of Nature'],
-        damage: ['Swift Boots','Berserker’s Fury','Haas’s Claws','Blade of Despair','Malefic Roar','Wind of Nature'],
-        armor: ['Tough Boots','Demon Hunter Sword','Rose Gold Meteor','Wind of Nature','Malefic Roar','Immortality']
+        balanced: ['Swift Boots',"Berserker's Fury",'Scarlet Phantom','Malefic Roar','Blade of Despair','Wind of Nature'],
+        damage:   ['Swift Boots',"Berserker's Fury","Haas's Claws",'Malefic Roar','Blade of Despair','Wind of Nature'],
+        armor:    ['Swift Boots','Demon Hunter Sword','Golden Staff','Malefic Roar',"Haas's Claws",'Wind of Nature']
       },
       Support: {
-        balanced: ['Magic Shoes','Flask of the Oasis','Favor Roam','Dominance Ice','Oracle','Immortality'],
-        damage: ['Arcane Boots','Enchanted Talisman','Fleeting Time','Necklace of Durance','Divine Glaive','Winter Crown'],
-        armor: ['Tough Boots','Conceal Roam','Dominance Ice',"Athena's Shield",'Oracle','Immortality']
+        balanced: ['Magic Shoes','Fleeting Time','Flask of the Oasis','Necklace of Durance','Oracle','Immortality'],
+        damage:   ['Arcane Boots','Fleeting Time','Holy Crystal','Necklace of Durance','Divine Glaive','Winter Crown'],
+        armor:    ['Tough Boots','Flask of the Oasis','Dominance Ice',"Athena's Shield",'Oracle','Immortality']
       }
     };
 
     const ITEM_META = {
-      'Tough Boots': ['👟','Crowd control and magic pressure'], 'Warrior Boots': ['👢','Physical lane pressure'],
-      'Arcane Boots': ['🥿','Early magic penetration'], 'Swift Boots': ['👟','Basic attack speed'],
-      'Rapid Boots': ['💨','Fast rotations'], 'Magic Shoes': ['🥿','Cooldown uptime'],
-      'Dominance Ice': ['❄️','Anti-heal and attack speed reduction'], "Athena's Shield": ['🔵','Burst magic shield'],
-      'Athena’s Shield': ['🔵','Burst magic shield'], 'Radiant Armor': ['🌞','Repeated magic damage'],
-      'Antique Cuirass': ['🧲','Reduces repeated physical skill damage'], 'Blade Armor': ['🛡️','Reflects marksman basic attacks'],
-      'Immortality': ['💀','Second life for late fights'], 'Oracle': ['🔮','Stronger shields and healing'],
-      'Cursed Helmet': ['⛑️','Extra area damage while tanking'], 'Guardian Helmet': ['💚','High HP and out-of-fight regen'],
-      'Endless Battle': ['🌊','True damage and sustain'], 'War Axe': ['🪓','Stacking fighter damage'],
-      'Blade of Despair': ['⚔️','Maximum finishing damage'], 'Hunter Strike': ['🎯','Penetration and chase speed'],
-      'Malefic Roar': ['🌑','Shreds armor'], 'Queen’s Wings': ['🪽','Survive burst while fighting'],
-      'Bloodlust Axe': ['🩸','Spell vamp sustain'], 'Sea Halberd': ['🗡️','Anti-heal damage item'],
-      'Blade of the Heptaseas': ['🔷','First-hit burst'], 'Berserker’s Fury': ['💥','Critical burst'],
-      'Haas’s Claws': ['🩸','Lifesteal'], 'Demon Hunter Sword': ['🗡️','Kills high-HP heroes'],
-      'Golden Staff': ['✨','Attack effect speed'], 'Windtalker': ['🌪️','Attack speed and wave clear'],
-      'Wind of Nature': ['💨','Physical immunity window'], 'Rose Gold Meteor': ['🌹','Magic shield for damage heroes'],
-      'Corrosion Scythe': ['🧊','Slows enemies with basic attacks'], 'Clock of Destiny': ['⏰','Scaling HP and magic power'],
-      'Lightning Truncheon': ['⚡','Burst combo damage'], 'Holy Crystal': ['🔮','Raw magic power'],
-      'Divine Glaive': ['💠','Magic penetration'], 'Genius Wand': ['🧠','Stacking magic defense reduction'],
-      'Glowing Wand': ['🔥','Burn damage and anti-heal'], 'Winter Crown': ['❄️','Stasis survival'],
-      'Blood Wings': ['🪽','Late-game magic power shield'], 'Necklace of Durance': ['📿','Anti-heal for magic/support'],
-      'Enchanted Talisman': ['📘','Mana and cooldown'], 'Fleeting Time': ['⏱️','Ultimate reset tempo'],
-      'Flask of the Oasis': ['🧪','Shield for healing supports'], 'Favor Roam': ['💚','Roam healing boost'],
-      'Conceal Roam': ['👻','Team engage or escape'], 'Thunder Belt': ['⚡','Defensive true damage slow']
+      'Tough Boots': ['👟','Resists CC and magic burst'],
+      'Warrior Boots': ['👢','Reduces physical damage in lane'],
+      'Arcane Boots': ['🥿','Early magic pen for burst openers'],
+      'Swift Boots': ['⚡','Attack speed for basic-attack carries'],
+      'Rapid Boots': ['💨','Fast rotations and vision control'],
+      'Magic Shoes': ['🥿','Max cooldown for abilities'],
+      'Dominance Ice': ['❄️','Cripples attack speed + anti-heal aura'],
+      "Athena's Shield": ['🔵','Absorbs one magic burst window'],
+      'Radiant Armor': ['🌞','Stacks up against repeated magic hits'],
+      'Antique Cuirass': ['🧲','Reduces each incoming physical skill hit'],
+      'Blade Armor': ['🛡️','Punishes basic-attack carries'],
+      'Immortality': ['💀','Second life — essential in close fights'],
+      'Oracle': ['🔮','Amplifies all heals and shields'],
+      'Cursed Helmet': ['⛑️','Burns nearby enemies — great on HP tanks'],
+      'Guardian Helmet': ['💚','Massive HP regen out of combat'],
+      'Endless Battle': ['🌊','True damage on every skill hit + sustain'],
+      'War Axe': ['🪓','Stacking damage + pen on extended fights'],
+      'Blade of Despair': ['⚔️','Highest raw damage — finishes low-HP targets'],
+      'Hunter Strike': ['🎯','Armor pen + movement burst on every 5th hit'],
+      'Malefic Roar': ['🌑','Ignores up to 70% of enemy armor'],
+      "Queen's Wings": ['🪽','Tanky when low — great for sustained dives'],
+      'Bloodlust Axe': ['🩸','Ability spell vamp to stay healthy'],
+      'Sea Halberd': ['🗡️','Anti-heal + damage in one slot'],
+      'Blade of the Heptaseas': ['🔷','Massive first-hit burst for assassins'],
+      "Berserker's Fury": ['💥','Critical damage multiplier'],
+      'Scarlet Phantom': ['👻','Crit rate + attack speed synergy'],
+      "Haas's Claws": ['🩸','Heavy lifesteal to sustain in teamfights'],
+      'Demon Hunter Sword': ['🗡️','Shreds % HP — great vs fat tanks'],
+      'Golden Staff': ['✨','Doubles on-hit attack effects'],
+      'Windtalker': ['🌪️','Attack speed burst + critical wave'],
+      'Wind of Nature': ['💨','2-sec physical immunity — dodge burst'],
+      'Rose Gold Meteor': ['🌹','Magic shield when low HP'],
+      'Corrosion Scythe': ['🧊','Slows enemies with every basic attack'],
+      'Clock of Destiny': ['⏰','Scales massively into mid/late game'],
+      'Lightning Truncheon': ['⚡','Massive AoE burst bouncing on combo'],
+      'Holy Crystal': ['🔮','Highest raw magic power spike'],
+      'Divine Glaive': ['💠','Up to 60% magic pen — ignores magic defense'],
+      'Genius Wand': ['🧠','Stacks magic defense reduction on each hit'],
+      'Glowing Wand': ['🔥','Burns % HP — great vs tanks'],
+      'Winter Crown': ['❄️','Stasis to survive assassin dive'],
+      'Blood Wings': ['🪽','Huge magic power + shield in lategame'],
+      'Necklace of Durance': ['📿','Cuts enemy healing and shields by 50%'],
+      'Enchanted Talisman': ['📘','Unlimited mana + cooldown reduction'],
+      'Fleeting Time': ['⏱️','Ultimate refreshes faster on kills/assists'],
+      'Flask of the Oasis': ['🧪','Bulkier shields for your whole team'],
+      'Favor Roam': ['💚','Gold income and healing from roam'],
+      'Conceal Roam': ['👻','Team stealth for surprise engage'],
+      'Thunder Belt': ['⚡','True damage slow every 1.5 seconds']
     };
 
     const COUNTER_RULES = [
@@ -778,9 +802,9 @@
     ];
 
     const BUILD_LABELS = {
-      balanced: ['Balanced', 'Default mix of damage, defense, and late-game safety.'],
-      damage: ['Damage', 'More kill pressure, penetration, and faster objective fights.'],
-      armor: ['Armor / Sustain', 'Safer into burst, divers, or hard enemy engage.']
+      balanced: ['Meta Build',   'Strongest current patch build — balanced damage, pen, and safety.'],
+      damage:   ['Full Damage',  'Max kill pressure. Go this when snowballing or enemy is squishy.'],
+      armor:    ['Safe Build',   'Stay alive and scale. Pick this when behind or against heavy burst.']
     };
 
     const ROLE_GUIDE = {
